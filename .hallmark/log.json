@@ -1,5 +1,38 @@
 [
   {
+    "date": "2026-09-01",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "dark / grotesk-sans / cool",
+    "vibe": "zed workbench, cool graphite",
+    "enrichment": "none",
+    "nav": "N3 Side-rail",
+    "footer": "Ft2 Inline-rule",
+    "brief": "Editor as IDE: activity rail, explorer, search, git, outline"
+  },
+  {
+    "date": "2026-09-01",
+    "macrostructure": "Feature Stack",
+    "theme": "custom",
+    "theme_axes": "dark / grotesk-sans / warm",
+    "vibe": "slate gray editor, amber signal",
+    "enrichment": "none",
+    "nav": "N13 Inline ⌘K",
+    "footer": "Ft1 Mast-headed",
+    "brief": "Editor session: charcoal gray, distinct from Unix terminal"
+  },
+  {
+    "date": "2026-09-01",
+    "macrostructure": "Split Studio",
+    "theme": "custom",
+    "theme_axes": "dark / grotesk-sans / cool",
+    "vibe": "session picker, graphite editor",
+    "enrichment": "none",
+    "nav": "N9 Edge-aligned",
+    "footer": "Ft5 Statement",
+    "brief": "Welcome chooser + IDE workspace beside existing Terminal shell"
+  },
+  {
     "date": "2026-08-31",
     "macrostructure": "Index-First",
     "theme": "Terminal",

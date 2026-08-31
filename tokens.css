@@ -27,6 +27,9 @@ html[data-theme="terminal"] {
   --font-serif: var(--font-jetbrains), ui-monospace, monospace;
   --font-label: var(--font-jetbrains), ui-monospace, monospace;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+  /* next/font subsets Latin only; box-drawing █╗═ must not mix with that face. */
+  --font-ascii: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
 
   --display-weight: 500;
   --display-style: normal;
@@ -89,6 +92,14 @@ html[data-theme="terminal"] {
   --dur-base: 0ms;
   --dur-slow: 0ms;
 
+  /* Boot overlay only — shell stays Terminal 0×. */
+  --boot-dur-tick: 90ms;
+  --boot-dur-short: 220ms;
+  --boot-dur-fetch: 280ms;
+  --boot-dur-bar: 1200ms;
+  --boot-dur-hold: 1400ms;
+  --boot-dur-exit: 320ms;
+
   --z-base: 1;
   --z-raised: 10;
   --z-dropdown: 100;
@@ -101,4 +112,103 @@ html[data-theme="terminal"] {
   --banner-height: 44px;
   --term-height: clamp(9rem, 26vh, 16rem);
   --tree-width: min(22rem, 38vw);
+  --rail-width: 3.25rem;
+}
+
+/* Hallmark · theme: custom · vibe: "session picker, cool graphite"
+ * paper: oklch(10% 0.012 220) · accent: oklch(78% 0.08 220)
+ * display: Space Grotesk · body: Space Grotesk · axes: dark / grotesk-sans / cool
+ */
+html[data-theme="chooser"] {
+  --color-paper: oklch(10% 0.012 220);
+  --color-paper-2: oklch(14% 0.014 220);
+  --color-paper-3: oklch(18% 0.016 220);
+  --color-rule: oklch(28% 0.022 220);
+  --color-rule-2: oklch(40% 0.03 220);
+  --color-muted: oklch(62% 0.03 220);
+  --color-neutral: oklch(72% 0.025 220);
+  --color-ink-2: oklch(82% 0.02 220);
+  --color-ink: oklch(93% 0.014 220);
+  --color-accent: oklch(78% 0.08 220);
+  --color-accent-ink: oklch(12% 0.02 220);
+  --color-focus: oklch(86% 0.08 220);
+  --color-error: oklch(72% 0.18 25);
+  --color-error-ink: oklch(18% 0.04 25);
+  --color-session-unix: oklch(78% 0.19 138);
+  --color-session-ide: oklch(72% 0.14 250);
+
+  --font-display: var(--font-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-body: var(--font-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-serif: var(--font-grotesk), ui-sans-serif, sans-serif;
+  --font-label: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
+  --display-weight: 500;
+  --display-style: normal;
+  --tracking-display: -0.03em;
+  --tracking-label: 0.08em;
+
+  --radius-card: 6px;
+  --radius-pill: 6px;
+  --radius-input: 6px;
+  --radius: 6px;
+  --shadow-card: none;
+
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+}
+
+/* Hallmark · theme: custom · vibe: "zed workbench, cool graphite"
+ * paper: oklch(13% 0.012 250) · accent: oklch(72% 0.14 250)
+ * display: Space Grotesk · body: Space Grotesk · axes: dark / grotesk-sans / cool
+ */
+html[data-theme="ide"] {
+  --color-paper: oklch(13% 0.012 250);
+  --color-paper-2: oklch(18% 0.014 250);
+  --color-paper-3: oklch(24% 0.016 250);
+  --color-rule: oklch(42% 0.022 250);
+  --color-rule-2: oklch(52% 0.024 250);
+  --color-muted: oklch(68% 0.024 250);
+  --color-neutral: oklch(76% 0.018 250);
+  --color-ink-2: oklch(86% 0.012 250);
+  --color-ink: oklch(95% 0.008 250);
+  --color-accent: oklch(72% 0.14 250);
+  --color-accent-ink: oklch(16% 0.02 250);
+  --color-focus: oklch(78% 0.16 250);
+  --color-error: oklch(72% 0.18 25);
+  --color-error-ink: oklch(18% 0.04 25);
+  --color-scrim: oklch(10% 0.01 250 / 0.62);
+
+  --font-display: var(--font-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-body: var(--font-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-serif: var(--font-grotesk), ui-sans-serif, sans-serif;
+  --font-label: var(--font-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
+  --display-weight: 500;
+  --display-style: normal;
+  --tracking-display: -0.03em;
+  --tracking-label: 0.06em;
+
+  --radius-card: 0;
+  --radius-pill: 4px;
+  --radius-input: 4px;
+  --radius: 4px;
+  --shadow-card: none;
+
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+
+  --banner-height: 2.75rem;
+  --tree-width: min(17rem, 36vw);
+  --rail-width: 3rem;
+  --ide-status: 1.75rem;
 }

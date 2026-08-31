@@ -1,8 +1,8 @@
 # Fadlan Hamsyari — portfolio
 
-Unix-flavoured personal site for **Fadlan Hamsyari Priyanto**, software engineer in Bekasi. The page is a small shell: file tree, open buffer, and a prompt that understands `help`, `ls`, `cat`, `open`, and a few other commands.
+Unix-flavoured personal site for **Fadlan Hamsyari Priyanto**, junior software engineer in Bekasi. The page is a small shell: file tree, open buffer, and a prompt (`fadlan@rcikaym`) that understands `help`, `ls`, `cat`, `open`, and a few other commands.
 
-Public facts come from [GitHub/Rcikaym](https://github.com/Rcikaym) and a public note about the Zavora-Life role. LinkedIn (`linkedin.com/in/fadlanhamsyari`) is linked but was not readable while this was built, so the experience log does not invent extra jobs.
+Facts come from the CV, [LinkedIn](https://www.linkedin.com/in/fadlanhamsyari), and [GitHub/Rcikaym](https://github.com/Rcikaym).
 
 ## Run locally
 

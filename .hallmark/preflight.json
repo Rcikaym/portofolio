@@ -1,9 +1,9 @@
 {
-  "scanned": "2026-08-31",
+  "scanned": "2026-09-01",
   "framework": "Next.js 16 (app router, src/)",
-  "fontStack": "JetBrains Mono via next/font (Terminal theme; mono everywhere on purpose)",
-  "palette": "Hallmark Terminal OKLCH tokens in tokens.css",
-  "motion": "motion-cut (Terminal duration scale 0×; caret blink only)",
-  "spacing": "Hallmark 4pt scale (--space-3xs … --space-4xl)",
-  "notes": "Empty repo at scan time; shadcn/ui added as primitives and mapped onto Terminal tokens."
+  "fontStack": "JetBrains Mono via next/font (layout.tsx; Terminal mono-only on purpose)",
+  "palette": "Hallmark Terminal OKLCH tokens in tokens.css, scoped to html[data-theme=terminal]",
+  "motion": "motion-cut on the shell (duration scale 0×); boot overlay has its own --boot-dur-* tokens",
+  "spacing": "Hallmark 4pt scale (--space-3xs … --space-4xl) in tokens.css",
+  "notes": "Index-First Unix shell + Workbench Editor (N3 activity rail, Ft2 status). html data-theme: chooser | terminal | ide. No design.md. lucide-react used for Editor rail icons."
 }

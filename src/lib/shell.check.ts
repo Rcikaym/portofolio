@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { parseCommand, splitArgs, complete } from "./shell";
-import { HOME } from "./content";
+import { HOME, profile } from "./content";
+
+assert.equal(`${profile.user}@${profile.host}`, "fadlan@rcikaym");
 
 const cwd = { cwd: HOME };
 

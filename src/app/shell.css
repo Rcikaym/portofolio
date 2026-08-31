@@ -118,6 +118,13 @@ a.is-focus {
   z-index: var(--z-sticky-nav);
 }
 
+.nav-term__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
 .nav-term__line {
   margin: 0;
   min-width: 0;
@@ -168,6 +175,7 @@ a.is-focus {
 }
 
 .tree {
+  position: relative;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -533,14 +541,119 @@ a.is-focus {
   text-decoration: none;
 }
 
+.shell[data-split="x"] {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.shell[data-split="y"] {
+  cursor: row-resize;
+  user-select: none;
+}
+
 .term {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   background: var(--color-paper-2);
   color: var(--color-ink);
   border-top: var(--rule-fine) solid var(--color-rule);
+}
+
+.shell[data-term="off"] .term {
+  border-top-width: 0;
+  pointer-events: none;
+}
+
+/* Hallmark · component: split · genre: atmospheric · theme: Terminal
+ * states: default · hover · focus · active · disabled · loading · error · success
+ */
+.split {
+  position: absolute;
+  z-index: var(--z-raised);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-rule-2);
+  appearance: none;
+  touch-action: none;
+}
+
+.split::before {
+  content: "";
+  position: absolute;
+}
+
+.split--x::before {
+  inset: 0 -19px;
+}
+
+.split--y::before {
+  inset: -19px 0;
+}
+
+.split--x {
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.split--y {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  cursor: row-resize;
+  pointer-events: auto;
+}
+
+.split:focus-visible,
+.split.is-focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  background: var(--color-accent);
+}
+
+.split:active,
+.split.is-active,
+.shell[data-split] .split:active {
+  background: var(--color-accent);
+}
+
+.split:disabled,
+.split[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.split[data-state="loading"] {
+  color: var(--color-muted);
+}
+
+.split[data-state="error"] {
+  background: var(--color-error);
+}
+
+.split[data-state="success"] {
+  background: var(--color-accent);
+}
+
+.term-toggle {
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .split:hover,
+  .split.is-hover {
+    background: var(--color-accent);
+  }
 }
 
 .term-log {
@@ -587,6 +700,7 @@ a.is-focus {
 
 .term-line {
   display: grid;
+  flex-shrink: 0;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 1ch;
   align-items: center;
@@ -668,11 +782,15 @@ a.is-focus {
 
 @media (max-width: 767px) {
   .shell {
-    grid-template-rows: auto minmax(0, 1fr) minmax(8rem, 32vh) auto;
+    grid-template-rows: auto minmax(0, 1fr) var(--term-height) auto;
   }
 
   .shell__body {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .split--x {
+    display: none;
   }
 
   .nav-term {
@@ -738,5 +856,275 @@ a.is-focus {
   .cmd-link {
     transform: none !important;
     transition-duration: 0ms !important;
+  }
+}
+
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V4 */
+/* Hallmark · component: boot-intro · genre: atmospheric · theme: Terminal
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: pass (ink on paper; accent fill on paper-3)
+ * tone: technical · audience: hiring managers · use: skip or sit, then land in shell
+ */
+.boot-gate {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  pointer-events: none;
+}
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  display: none;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
+  padding-left: max(var(--page-gutter), env(safe-area-inset-left));
+  padding-right: max(var(--page-gutter), env(safe-area-inset-right));
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  overflow-x: clip;
+  opacity: 1;
+  transition: opacity var(--boot-dur-exit) var(--ease-in);
+}
+
+.boot[open] {
+  display: grid;
+}
+
+.boot::backdrop {
+  background: var(--color-paper);
+}
+
+.boot[data-state="success"] {
+  opacity: 0;
+}
+
+.boot__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.boot__pkg {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.boot-skip {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .boot-skip:hover,
+  .boot-skip.is-hover {
+    background: var(--color-paper-3) !important;
+    color: var(--color-ink) !important;
+  }
+}
+
+.boot-skip.is-hover {
+  background: var(--color-paper-3) !important;
+  color: var(--color-ink) !important;
+}
+
+.boot-skip:focus-visible,
+.boot-skip.is-focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.boot-skip:active,
+.boot-skip.is-active {
+  transform: translateY(1px);
+}
+
+.boot-skip:disabled,
+.boot-skip[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.boot-skip[data-state="loading"] {
+  color: var(--color-muted) !important;
+}
+
+.boot-skip[data-state="error"] {
+  border-color: var(--color-error) !important;
+  color: var(--color-error) !important;
+}
+
+.boot-skip[data-state="success"] {
+  color: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.boot__body {
+  min-width: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2xs);
+}
+
+.boot-log {
+  display: grid;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+
+.boot-line {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  animation: boot-fade var(--boot-dur-short) var(--ease-out) forwards;
+}
+
+.boot-log .boot-line:first-child {
+  opacity: 1;
+  animation: none;
+}
+
+@keyframes boot-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+.boot-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: min(36rem, 100%);
+  height: var(--space-sm);
+  margin: var(--space-xs) 0 var(--space-sm);
+  background: var(--color-paper-3);
+  color: var(--color-accent);
+  border: var(--rule-fine) solid var(--color-rule);
+  overflow: clip;
+}
+
+.boot-bar__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation: boot-bar var(--boot-dur-bar) linear forwards;
+}
+
+.boot-fetch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3xs);
+  align-items: center;
+  min-width: 0;
+}
+
+.boot-fetch__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-ink-2);
+}
+
+.boot-fetch__track {
+  display: block;
+  width: min(22rem, 100%);
+  height: var(--space-2xs);
+  background: var(--color-paper-3);
+  color: var(--color-accent);
+  overflow: clip;
+}
+
+.boot-fetch__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation: boot-bar var(--boot-dur-fetch) linear forwards;
+}
+
+@media (min-width: 40rem) {
+  .boot-fetch {
+    grid-template-columns: minmax(0, 22ch) minmax(0, 1fr);
+    gap: var(--space-sm);
+  }
+}
+
+@keyframes boot-bar {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.boot-ascii-wrap {
+  container-type: inline-size;
+  min-width: 0;
+  overflow-x: clip;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3xs);
+  margin-block: var(--space-xs) var(--space-sm);
+}
+
+.boot-ascii {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+  font-family: var(--font-ascii);
+  font-style: normal;
+  font-weight: 400;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  /* 55 cols × 0.6em ≈ 33em; divisor leaves a gutter. */
+  font-size: clamp(5px, calc(100cqw / 36), 1.15rem);
+  line-height: 1.12;
+  white-space: pre;
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot {
+    transition-duration: 150ms;
+  }
+
+  .boot-line,
+  .boot-ascii-wrap {
+    animation: none;
+    opacity: 1;
+  }
+
+  .boot-bar__fill,
+  .boot-fetch__fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+
+  .boot-skip {
+    transform: none !important;
   }
 }

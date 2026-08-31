@@ -1,22 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileView } from "@/components/file-view";
-import {
-  HOME,
-  childrenOf,
-  profile,
-  type FsEntry,
-} from "@/lib/content";
+import { FileTree } from "@/components/file-tree";
+import { HOME, profile } from "@/lib/content";
 import {
   complete,
   defaultOpen,
   parseCommand,
   type ShellAction,
 } from "@/lib/shell";
+import { BOOT_STORAGE_KEY } from "@/lib/boot";
+import { BootGate, BootIntro } from "@/components/boot-intro";
+import { clampSplit, isTermToggleKey } from "@/lib/split";
 
 type LogLine = {
   id: number;
@@ -29,7 +28,11 @@ function promptFor(cwd: string) {
   return `${profile.user}@${profile.host}:${short}`;
 }
 
-export function Workspace() {
+export function Workspace({
+  onChangeSession,
+}: {
+  onChangeSession?: () => void;
+}) {
   const [cwd, setCwd] = useState(HOME);
   const [openPath, setOpenPath] = useState(defaultOpen());
   const [treeOpen, setTreeOpen] = useState(false);
@@ -39,6 +42,7 @@ export function Workspace() {
   );
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [boot, setBoot] = useState<"unknown" | "on" | "off">("unknown");
   const [log, setLog] = useState<LogLine[]>(() => [
     {
       id: 0,
@@ -55,7 +59,19 @@ export function Workspace() {
   const histIdx = useRef<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const logEnd = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const treeRef = useRef<HTMLElement>(null);
+  const termRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<{
+    axis: "x" | "y";
+    start: number;
+    size: number;
+  } | null>(null);
   const idRef = useRef(2);
+  const [treeW, setTreeW] = useState<number | null>(null);
+  const [termH, setTermH] = useState<number | null>(null);
+  const [termOpen, setTermOpen] = useState(true);
+  const [splitting, setSplitting] = useState<"x" | "y" | null>(null);
 
   const push = useCallback((kind: LogLine["kind"], text: string) => {
     const id = ++idRef.current;
@@ -75,6 +91,34 @@ export function Workspace() {
   useEffect(() => {
     logEnd.current?.scrollIntoView({ block: "end" });
   }, [log]);
+
+  useEffect(() => {
+    try {
+      const replay = new URLSearchParams(window.location.search).has("boot");
+      if (replay) {
+        sessionStorage.removeItem(BOOT_STORAGE_KEY);
+        setBoot("on");
+        return;
+      }
+      if (sessionStorage.getItem(BOOT_STORAGE_KEY) === "1") {
+        setBoot("off");
+        return;
+      }
+    } catch {
+      /* private mode */
+    }
+    setBoot("on");
+  }, []);
+
+  const finishBoot = useCallback(() => {
+    try {
+      sessionStorage.setItem(BOOT_STORAGE_KEY, "1");
+    } catch {
+      /* private mode */
+    }
+    setBoot("off");
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }, []);
 
   const copyEmail = useCallback(async (email: string = profile.email) => {
     setCopyState("loading");
@@ -217,9 +261,84 @@ export function Workspace() {
     return () => window.removeEventListener("keydown", onSlash);
   }, []);
 
-  const tree = useMemo(() => {
-    return { homeFiles: childrenOf(HOME) };
+  const toggleTerm = useCallback((open?: boolean) => {
+    setTermOpen((prev) => {
+      const next = open ?? !prev;
+      if (next) window.setTimeout(() => inputRef.current?.focus(), 0);
+      return next;
+    });
   }, []);
+
+  useEffect(() => {
+    if (boot !== "off") return;
+    const onKey = (event: KeyboardEvent) => {
+      if (!isTermToggleKey(event)) return;
+      event.preventDefault();
+      toggleTerm();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [boot, toggleTerm]);
+
+  const onSplitDown = (
+    axis: "x" | "y",
+    event: PointerEvent<HTMLButtonElement>,
+  ) => {
+    const node = axis === "x" ? treeRef.current : termRef.current;
+    if (!node) return;
+    const box = node.getBoundingClientRect();
+    const size = axis === "x" ? box.width : box.height;
+    dragRef.current = {
+      axis,
+      start: axis === "x" ? event.clientX : event.clientY,
+      size,
+    };
+    if (axis === "x") setTreeW(size);
+    else {
+      setTermH(size);
+      setTermOpen(true);
+    }
+    setSplitting(axis);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const onSplitMove = (event: PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const shell = shellRef.current?.getBoundingClientRect();
+    if (drag.axis === "x") {
+      const max = shell ? Math.min(shell.width * 0.5, 28 * 16) : 448;
+      setTreeW(
+        clampSplit(drag.size + (event.clientX - drag.start), 10 * 16, max),
+      );
+      return;
+    }
+    const max = shell ? Math.max(8 * 16, shell.height * 0.7) : 420;
+    const next = drag.size - (event.clientY - drag.start);
+    if (next < 4.5 * 16) {
+      setTermOpen(false);
+      dragRef.current = null;
+      setSplitting(null);
+      return;
+    }
+    setTermOpen(true);
+    setTermH(clampSplit(next, 8 * 16, max));
+  };
+
+  const onSplitUp = () => {
+    dragRef.current = null;
+    setSplitting(null);
+  };
+
+  const shellStyle: CSSProperties = {};
+  if (treeW != null) {
+    shellStyle["--tree-width" as string] = `${treeW}px`;
+  }
+  if (!termOpen) {
+    shellStyle["--term-height" as string] = "0px";
+  } else if (termH != null) {
+    shellStyle["--term-height" as string] = `${termH}px`;
+  }
 
   const openName = openPath.split("/").pop() ?? openPath;
   const navFlags: { flag: string; target: string }[] = [
@@ -229,9 +348,25 @@ export function Workspace() {
     { flag: "--mail", target: `${HOME}/contact.sh` },
   ];
 
+  const booting = boot !== "off";
+
   return (
-    <div className="shell">
-      <a className="skip" href="#terminal">
+    <>
+      {boot === "on" ? <BootIntro onDone={finishBoot} /> : null}
+      {boot === "unknown" ? <BootGate /> : null}
+    <div
+      ref={shellRef}
+      className="shell"
+      data-term={termOpen ? "on" : "off"}
+      data-split={splitting ?? undefined}
+      style={shellStyle}
+      {...(booting ? { inert: true } : {})}
+    >
+      <a
+        className="skip"
+        href="#terminal"
+        onClick={() => toggleTerm(true)}
+      >
         skip to prompt
       </a>
       <header className="nav-term">
@@ -261,49 +396,59 @@ export function Workspace() {
             ▮
           </span>
         </p>
-        <Button
-          type="button"
-          variant="ghost"
-          className="menu-toggle cmd"
-          aria-expanded={treeOpen}
-          aria-controls="file-tree"
-          onClick={() => setTreeOpen((v) => !v)}
-        >
-          {treeOpen ? "[ close ]" : "[ ls ]"}
-        </Button>
+        <div className="nav-term__actions">
+          {onChangeSession ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="cmd"
+              onClick={onChangeSession}
+            >
+              [ session ]
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            className="cmd term-toggle"
+            aria-pressed={termOpen}
+            aria-controls="terminal"
+            aria-keyshortcuts="Control+` Meta+`"
+            onClick={() => toggleTerm()}
+          >
+            [ term ]
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="menu-toggle cmd"
+            aria-expanded={treeOpen}
+            aria-controls="file-tree"
+            onClick={() => setTreeOpen((v) => !v)}
+          >
+            {treeOpen ? "[ close ]" : "[ ls ]"}
+          </Button>
+        </div>
       </header>
 
       <div className="shell__body">
         <aside
+          ref={treeRef}
           id="file-tree"
           className={treeOpen ? "tree is-open" : "tree"}
         >
           <p className="tree-label">{HOME}/</p>
           <ScrollArea className="tree-scroll">
-            <nav aria-label="Home directory">
-              <ul>
-                {tree.homeFiles.map((entry) => (
-                  <TreeRow
-                    key={entry.path}
-                    entry={entry}
-                    openPath={openPath}
-                    onOpen={openFile}
-                  />
-                ))}
-              </ul>
-              <p className="tree-label nested">projects/</p>
-              <ul>
-                {childrenOf(`${HOME}/projects`).map((entry) => (
-                  <TreeRow
-                    key={entry.path}
-                    entry={entry}
-                    openPath={openPath}
-                    onOpen={openFile}
-                  />
-                ))}
-              </ul>
-            </nav>
+            <FileTree openPath={openPath} onOpen={openFile} />
           </ScrollArea>
+          <Split
+            axis="x"
+            label="Resize file tree"
+            onPointerDown={(event) => onSplitDown("x", event)}
+            onPointerMove={onSplitMove}
+            onPointerUp={onSplitUp}
+            onReset={() => setTreeW(null)}
+          />
         </aside>
 
         <section className="editor" aria-label="Open file">
@@ -322,7 +467,22 @@ export function Workspace() {
         </section>
       </div>
 
-      <section id="terminal" className="term" aria-label="Command prompt">
+      <section
+        ref={termRef}
+        id="terminal"
+        className="term"
+        aria-label="Command prompt"
+        aria-hidden={!termOpen}
+        {...(!termOpen ? { inert: true } : {})}
+      >
+        <Split
+          axis="y"
+          label="Resize terminal"
+          onPointerDown={(event) => onSplitDown("y", event)}
+          onPointerMove={onSplitMove}
+          onPointerUp={onSplitUp}
+          onReset={() => setTermH(null)}
+        />
         <ScrollArea className="term-log">
           <div className="term-log__inner">
             {log.map((line) => (
@@ -366,41 +526,46 @@ export function Workspace() {
 
       <footer className="foot-dense">
         <p>
-          {profile.fullName} · {profile.role}, {profile.location}. Public
-          record from GitHub/{profile.handle}
-          {"; "}
-          LinkedIn did not render in this build so experience.log stays sourced.
-          Typeface JetBrains Mono. No metrics invented. {new Date().getFullYear()}.
+          {profile.fullName} · {profile.role}, {profile.location}. GitHub/
+          {profile.handle}. Typeface JetBrains Mono. {new Date().getFullYear()}.
         </p>
       </footer>
     </div>
+    </>
   );
 }
 
-function TreeRow({
-  entry,
-  openPath,
-  onOpen,
+function Split({
+  axis,
+  label,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onReset,
 }: {
-  entry: FsEntry;
-  openPath: string;
-  onOpen: (path: string) => void;
+  axis: "x" | "y";
+  label: string;
+  onPointerDown: (event: PointerEvent<HTMLButtonElement>) => void;
+  onPointerMove: (event: PointerEvent<HTMLButtonElement>) => void;
+  onPointerUp: () => void;
+  onReset: () => void;
 }) {
-  const current = openPath === entry.path;
   return (
-    <li>
-      <button
-        type="button"
-        className="tree-item"
-        aria-current={current ? "true" : undefined}
-        onClick={() => onOpen(entry.path)}
-      >
-        <span className="tree-kind" aria-hidden="true">
-          {entry.kind === "dir" ? "d" : "-"}
-        </span>
-        {entry.name}
-        {entry.kind === "dir" ? "/" : ""}
-      </button>
-    </li>
+    <button
+      type="button"
+      className={`split split--${axis}`}
+      aria-label={label}
+      aria-orientation={axis === "x" ? "vertical" : "horizontal"}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onLostPointerCapture={onPointerUp}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        onReset();
+      }}
+    />
   );
 }
+
