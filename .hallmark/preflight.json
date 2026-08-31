@@ -1,0 +1,9 @@
+{
+  "scanned": "2026-08-31",
+  "framework": "Next.js 16 (app router, src/)",
+  "fontStack": "JetBrains Mono via next/font (Terminal theme; mono everywhere on purpose)",
+  "palette": "Hallmark Terminal OKLCH tokens in tokens.css",
+  "motion": "motion-cut (Terminal duration scale 0×; caret blink only)",
+  "spacing": "Hallmark 4pt scale (--space-3xs … --space-4xl)",
+  "notes": "Empty repo at scan time; shadcn/ui added as primitives and mapped onto Terminal tokens."
+}
