@@ -172,6 +172,7 @@ a.is-focus {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   border-right: var(--rule-fine) solid var(--color-rule);
   background: var(--color-paper-2);
   color: var(--color-ink);
@@ -674,6 +675,10 @@ a.is-focus {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .nav-term {
+    padding-block: 0;
+  }
+
   .menu-toggle {
     display: inline-flex;
     flex-shrink: 0;
@@ -685,9 +690,14 @@ a.is-focus {
 
   .tree {
     position: fixed;
-    inset: var(--banner-height) 0 auto 0;
-    z-index: var(--z-dropdown);
+    top: var(--banner-height);
+    right: 0;
+    left: 0;
+    bottom: auto;
+    z-index: var(--z-modal);
+    height: min(70dvh, 28rem);
     max-height: min(70dvh, 28rem);
+    overflow: hidden;
     border-bottom: var(--rule-fine) solid var(--color-rule);
     transform: translateY(-8px);
     opacity: 0;

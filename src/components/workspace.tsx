@@ -58,8 +58,18 @@ export function Workspace() {
   const idRef = useRef(2);
 
   const push = useCallback((kind: LogLine["kind"], text: string) => {
-    idRef.current += 1;
-    setLog((prev) => [...prev, { id: idRef.current, kind, text }]);
+    const id = ++idRef.current;
+    setLog((prev) => [...prev, { id, kind, text }]);
+  }, []);
+
+  const pushLines = useCallback((kind: LogLine["kind"], lines: string[]) => {
+    if (lines.length === 0) return;
+    const items = lines.map((text) => ({
+      id: ++idRef.current,
+      kind,
+      text,
+    }));
+    setLog((prev) => [...prev, ...items]);
   }, []);
 
   useEffect(() => {
@@ -93,17 +103,17 @@ export function Workspace() {
           setCwd(action.path);
           setOpenPath(action.path);
           setTreeOpen(false);
-          action.lines?.forEach((line) => push("out", line));
+          if (action.lines?.length) pushLines("out", action.lines);
           continue;
         }
         if (action.type === "open") {
           setOpenPath(action.path);
           setTreeOpen(false);
-          action.lines?.forEach((line) => push("out", line));
+          if (action.lines?.length) pushLines("out", action.lines);
           continue;
         }
         if (action.type === "href") {
-          action.lines.forEach((line) => push("ok", line));
+          pushLines("ok", action.lines);
           window.open(action.url, "_blank", "noopener,noreferrer");
           continue;
         }
@@ -115,15 +125,12 @@ export function Workspace() {
               : action.tone === "dim"
                 ? "dim"
                 : "out";
-        action.lines.forEach((line) => {
-          if (line.startsWith("MAILTO=")) {
-            void copyEmail(line.slice(7));
-          }
-          push(kind, line);
-        });
+        const mail = action.lines.find((line) => line.startsWith("MAILTO="));
+        if (mail) void copyEmail(mail.slice(7));
+        pushLines(kind, action.lines);
       }
     },
-    [copyEmail, push],
+    [copyEmail, pushLines],
   );
 
   const openFile = useCallback(
