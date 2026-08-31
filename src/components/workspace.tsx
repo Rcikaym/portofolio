@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileView } from "@/components/file-view";
 import { FileTree } from "@/components/file-tree";
@@ -208,14 +207,15 @@ export function Workspace({
   );
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value;
     if (event.key === "Enter") {
       event.preventDefault();
-      run(input);
+      run(value);
       return;
     }
     if (event.key === "Tab") {
       event.preventDefault();
-      setInput(complete(input, cwd));
+      setInput(complete(value, cwd));
       return;
     }
     if (event.key === "ArrowUp") {
@@ -330,15 +330,14 @@ export function Workspace({
     setSplitting(null);
   };
 
-  const shellStyle: CSSProperties = {};
-  if (treeW != null) {
-    shellStyle["--tree-width" as string] = `${treeW}px`;
-  }
-  if (!termOpen) {
-    shellStyle["--term-height" as string] = "0px";
-  } else if (termH != null) {
-    shellStyle["--term-height" as string] = `${termH}px`;
-  }
+  const shellStyle = {
+    ...(treeW != null ? { "--tree-width": `${treeW}px` } : {}),
+    ...(!termOpen
+      ? { "--term-height": "0px" }
+      : termH != null
+        ? { "--term-height": `${termH}px` }
+        : {}),
+  } as CSSProperties;
 
   const openName = openPath.split("/").pop() ?? openPath;
   const navFlags: { flag: string; target: string }[] = [
@@ -497,7 +496,7 @@ export function Workspace({
           className="term-line"
           onSubmit={(event) => {
             event.preventDefault();
-            run(input);
+            run(inputRef.current?.value ?? input);
           }}
         >
           <label className="sr-only" htmlFor="cmd">
@@ -506,10 +505,11 @@ export function Workspace({
           <span className="prompt" aria-hidden="true">
             {promptFor(cwd)}$
           </span>
-          <Input
+          <input
             ref={inputRef}
             id="cmd"
             name="cmd"
+            type="text"
             value={input}
             disabled={busy}
             data-state={busy ? "loading" : copyState === "error" ? "error" : undefined}
