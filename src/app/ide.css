@@ -434,6 +434,26 @@ html[data-theme="ide"] {
   min-width: 0;
 }
 
+.ide .letter h1 {
+  font-size: var(--text-display-s);
+  overflow-wrap: break-word;
+}
+
+.ide .letter-index li {
+  padding: var(--space-sm) 0;
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.ide .letter .index-link {
+  width: auto;
+  max-width: 100%;
+  padding: 0;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .ide .lede {
   font-family: var(--font-body);
   font-size: var(--text-md);
@@ -663,6 +683,12 @@ html[data-theme="ide"] {
   .ide-status a:hover,
   .ide-status a.is-hover,
   .ide-git__remote a:hover {
+    color: var(--color-ink);
+  }
+
+  .ide .letter .index-link:hover,
+  .ide .letter .index-link.is-hover {
+    background: transparent;
     color: var(--color-ink);
   }
 }

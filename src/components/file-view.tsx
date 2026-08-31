@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +11,7 @@ import {
   skills,
   type Project,
 } from "@/lib/content";
+import { HelloType } from "@/components/hello-type";
 import { headingAnchor } from "@/lib/ide";
 import { projectByFilename } from "@/lib/shell";
 
@@ -100,17 +100,6 @@ function DirList({
   );
 }
 
-function PromptLine({ children }: { children: ReactNode }) {
-  return (
-    <p className="lede">
-      <span className="prompt" aria-hidden="true">
-        {">"}
-      </span>
-      {children}
-    </p>
-  );
-}
-
 function Readme({
   onOpen,
   skin,
@@ -118,66 +107,71 @@ function Readme({
   onOpen: (path: string) => void;
   skin: FileSkin;
 }) {
+  const tree = [
+    { file: "about.md", open: "about.md", gloss: "who this is" },
+    { file: "experience.log", open: "experience.log", gloss: "jobs, school, certs" },
+    {
+      file: skin === "ide" ? "projects" : "projects/",
+      open: "projects",
+      gloss: `${projects.length} public repos`,
+    },
+    { file: "skills.txt", open: "skills.txt", gloss: "languages and tools from work" },
+    { file: "contact.sh", open: "contact.sh", gloss: "mail, GitHub, LinkedIn" },
+  ] as const;
+
   return (
-    <article className="doc" id="readme">
-      {skin === "unix" ? (
-        <PromptLine>
-          {profile.user}@{profile.host} — {profile.role.toLowerCase()}.
-        </PromptLine>
-      ) : (
-        <p className="lede">
-          {profile.user} — {profile.role.toLowerCase()}.
-        </p>
-      )}
+    <article className="doc letter" id="readme">
+      <p className="letter-when">
+        {profile.location} · 2026
+      </p>
+      <HelloType />
       <p>
-        {skin === "unix"
-          ? "Open a file in the tree, or type a command in the prompt below. This index is the page."
-          : "Explorer, search, and source control sit on the rail. ⌘K jumps to a file."}
+        This directory is the site. Unix shell or editor — same files either
+        way. The tree is the portfolio.
       </p>
-      <ul className="index" id="readme-index">
-        <li>
-          <button type="button" className="index-link" onClick={() => onOpen("about.md")}>
-            about.md
-          </button>
-          <span className="dim">who this is</span>
-        </li>
-        <li>
-          <button type="button" className="index-link" onClick={() => onOpen("experience.log")}>
-            experience.log
-          </button>
-          <span className="dim">jobs, school, certs</span>
-        </li>
-        <li>
-          <button type="button" className="index-link" onClick={() => onOpen("projects")}>
-            {skin === "ide" ? "projects" : "projects/"}
-          </button>
-          <span className="dim">{projects.length} public repos</span>
-        </li>
-        <li>
-          <button type="button" className="index-link" onClick={() => onOpen("skills.txt")}>
-            skills.txt
-          </button>
-          <span className="dim">languages and tools from work</span>
-        </li>
-        <li>
-          <button type="button" className="index-link" onClick={() => onOpen("contact.sh")}>
-            contact.sh
-          </button>
-          <span className="dim">mail, github, linkedin</span>
-        </li>
+      <p>
+        Junior software engineer in Bekasi. Web most days — TypeScript, Next.js,
+        NestJS, PostgreSQL. Workshop days, Python, PowerShell, and Siemens PLCs.
+        SMKN 1 Kota Bekasi, 2025. Recent work: a manufacturing execution system
+        at CV. Mesin Ngebut Canggih, diagnostics at Kemendikdasmen, and NimeList
+        at PT Bangun Kreatif Abadi.
+      </p>
+      <p>
+        Open to full-time or freelance in web, backend, or automation.
+      </p>
+      <p className="letter-rule" aria-hidden="true">
+        * * *
+      </p>
+      <p className="letter-ps" id="readme-index">
+        P.S. The longer cut lives in the tree.
+      </p>
+      <ul className="index letter-index">
+        {tree.map((row) => (
+          <li key={row.open}>
+            <button
+              type="button"
+              className="index-link"
+              onClick={() => onOpen(row.open)}
+            >
+              {row.file}
+            </button>
+            <span className="dim">{row.gloss}</span>
+          </li>
+        ))}
       </ul>
-      <p className="dim hint">
-        {skin === "unix" ? (
-          <>
-            try: <kbd>help</kbd> · <kbd>ls -l</kbd> · <kbd>cat about.md</kbd> ·{" "}
-            <kbd>open github</kbd>
-          </>
-        ) : (
-          <>
-            try: explorer · search · git · <kbd>⌘K</kbd>
-          </>
-        )}
-      </p>
+      <footer className="letter-sign">
+        <Image
+          src={profile.avatar}
+          alt=""
+          width={40}
+          height={40}
+          className="avatar"
+        />
+        <div className="letter-sign-meta">
+          <p>{profile.fullName}</p>
+          <p className="dim">{profile.role}</p>
+        </div>
+      </footer>
     </article>
   );
 }
