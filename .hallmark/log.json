@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-09-01",
+    "macrostructure": "Letter",
+    "theme": "Terminal",
+    "theme_axes": "dark / mono / chromatic-other",
+    "enrichment": "none",
+    "nav": "N8 Terminal command",
+    "footer": "Ft6 Letter close",
+    "brief": "In-app README as a letter from Fadlan — who and what’s in the tree, not how to operate the shell"
+  },
+  {
+    "date": "2026-09-01",
     "macrostructure": "Workbench",
     "theme": "custom",
     "theme_axes": "dark / grotesk-sans / cool",

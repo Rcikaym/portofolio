@@ -1,38 +1,23 @@
-# Fadlan Hamsyari — portfolio
+# Fadlan Hamsyari
 
-Unix-flavoured personal site for **Fadlan Hamsyari Priyanto**, junior software engineer in Bekasi. The page is a small shell: file tree, open buffer, and a prompt (`fadlan@rcikaym`) that understands `help`, `ls`, `cat`, `open`, and a few other commands.
+Junior software engineer in Bekasi. This repo is the public home directory — a Unix shell or an editor, same files either way.
 
-Facts come from the CV, [LinkedIn](https://www.linkedin.com/in/fadlanhamsyari), and [GitHub/Rcikaym](https://github.com/Rcikaym).
+I ship web software and the automation around it. Recent work includes a manufacturing execution system at CV. Mesin Ngebut Canggih, diagnostics at Kemendikdasmen, and NimeList at PT Bangun Kreatif Abadi. Public code as [Rcikaym](https://github.com/Rcikaym).
 
-## Run locally
+## What’s in the tree
+
+- `about.md` — who this is
+- `experience.log` — jobs, school, certs
+- `projects/` — public repos
+- `skills.txt` — languages and tools from work
+- `contact.sh` — mail, GitHub, LinkedIn
+
+Open to full-time or freelance in web, backend, or automation. [LinkedIn](https://www.linkedin.com/in/fadlanhamsyari) · fdlnh12@gmail.com
+
+## Local
 
 ```bash
-npm install
-npm run dev
+npm install && npm run dev
 ```
 
-Then open [http://127.0.0.1:4317](http://127.0.0.1:4317).
-
-```bash
-npm run check   # command parser self-check
-npm run lint
-npm run build
-```
-
-## Stack
-
-Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui primitives, Hallmark Terminal tokens (JetBrains Mono, phosphor on near-black).
-
-## Prompt cheatsheet
-
-| command | what it does |
-| --- | --- |
-| `help` | command list |
-| `ls -l` | long listing of the current directory |
-| `cat about.md` | open a file in the editor |
-| `cd projects` | move into `~/fadlan/projects` |
-| `open github` | GitHub profile in a new tab |
-| `mail` | copy `fdlnh12@gmail.com` |
-| `clear` | wipe scrollback |
-
-Tab completes commands and filenames. Up/down walks history.
+Then [http://127.0.0.1:4317](http://127.0.0.1:4317).

@@ -176,8 +176,8 @@ export function outlineFor(path: string): OutlineRow[] {
   const name = p.split("/").pop() ?? "";
   if (name === "README.md") {
     return [
-      { id: "readme", label: "README.md" },
-      { id: "readme-index", label: "Index" },
+      { id: "readme", label: "Hello" },
+      { id: "readme-index", label: "P.S." },
     ];
   }
   if (name === "about.md") {

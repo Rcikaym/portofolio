@@ -35,6 +35,10 @@ assert.equal(remote.since, profile.githubSince);
 assert.equal(scmPublished().length, projects.length);
 assert.ok(scmPublished().every((row) => row.url.startsWith("https://github.com/")));
 
+assert.deepEqual(
+  outlineFor(`${HOME}/README.md`).map((row) => row.label),
+  ["Hello", "P.S."],
+);
 assert.equal(headingAnchor("job", "Software engineer"), "job-software-engineer");
 assert.ok(outlineFor(`${HOME}/experience.log`).some((row) => row.id === "job-software-engineer"));
 assert.equal(nextTab(["a", "b", "c"], "b", "b"), "a");
