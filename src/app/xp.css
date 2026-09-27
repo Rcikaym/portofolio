@@ -1,0 +1,1525 @@
+/* Windows XP Luna homage — scoped under .xp-root so shell/ide themes stay intact. */
+
+.xp-root {
+  --xp-blue-0: #0058e6;
+  --xp-blue-1: #3a93ff;
+  --xp-blue-2: #245edb;
+  --xp-chrome: #ece9d8;
+  --xp-chrome-2: #d4d0c8;
+  --xp-ink: #111111;
+  --xp-green-0: #3c9c3c;
+  --xp-green-1: #7fcf7f;
+  --xp-task-h: 38px;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  font-family: Tahoma, "Segoe UI", Verdana, sans-serif;
+  color: #fff;
+  background: #245edb;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bliss wallpaper — real photo with gradient fallback while it loads */
+.xp-wallpaper {
+  position: absolute;
+  inset: 0;
+  background:
+    url("/bliss.jpg") center / cover no-repeat,
+    linear-gradient(180deg, #1c5fc4 0%, #4a97ec 38%, #8ec2f7 52%, #4da14d 53%, #3f9c40 62%, #2e7d32 100%);
+}
+.xp-wallpaper::after {
+  content: none;
+}
+
+.xp-stage {
+  position: absolute;
+  inset: 0;
+  bottom: var(--xp-task-h);
+}
+
+/* ---- desktop icons: left column like ref shot 2 ---- */
+.xp-icons {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 220px;
+  align-content: flex-start;
+  z-index: 1;
+}
+.xp-icon {
+  width: 100px;
+  padding: 6px 2px 4px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 3px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.xp-icon:hover,
+.xp-icon:focus-visible {
+  background: rgba(49, 106, 197, 0.55);
+  outline: 1px dotted #fff;
+  outline-offset: -1px;
+}
+.xp-icon__glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin-bottom: 5px;
+  font-size: 34px;
+  line-height: 1;
+  filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.65));
+}
+.xp-icon__glyph img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  image-rendering: auto;
+  pointer-events: none;
+}
+/* pixel-art terminal icon stays crisp */
+img[src*="terminal.png"] {
+  image-rendering: pixelated;
+}
+
+/* ---- windows ---- */
+.xp-win {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 260px;
+  min-height: 180px;
+  background: var(--xp-chrome);
+  color: var(--xp-ink);
+  border: 1px solid #00138c;
+  border-top: 0;
+  border-radius: 8px 8px 4px 4px;
+  box-shadow: 4px 4px 18px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.xp-win.is-max {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+}
+.xp-win.is-active {
+  box-shadow: 3px 3px 14px rgba(0, 0, 0, 0.55);
+}
+.xp-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  background: linear-gradient(180deg, #3d8bff 0%, #2970ef 4%, #245edb 12%, #245edb 88%, #1941a5 100%);
+  border-radius: 8px 8px 0 0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.xp-win:not(.is-active) .xp-titlebar {
+  background: linear-gradient(180deg, #7a8aa0 0%, #5b6b82 50%, #4a5a72 100%);
+}
+.xp-titlebar__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.xp-titlebar__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xp-titlebar__btns {
+  display: flex;
+  gap: 2px;
+}
+.xp-tbtn {
+  width: 24px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #3c81f3 0%, #1c5fd6 50%, #0f4fc4 100%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+  cursor: pointer;
+  text-shadow: none;
+}
+.xp-tbtn:hover {
+  filter: brightness(1.15);
+}
+.xp-tbtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+.xp-tbtn--close {
+  background: linear-gradient(180deg, #f3a08a 0%, #e0662e 40%, #d64f1e 100%);
+}
+.xp-menubar {
+  display: flex;
+  gap: 2px;
+  padding: 1px 4px;
+  background: var(--xp-chrome);
+  border-bottom: 1px solid #aca899;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.xp-menubar span {
+  padding: 2px 7px;
+}
+.xp-win-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
+/* reuse existing panes inside XP windows — override full-viewport sizing */
+.xp-win-body .shell,
+.xp-win-body .ide {
+  height: 100%;
+  min-height: 0;
+}
+.xp-win-body .shell {
+  grid-template-rows: auto minmax(0, 1fr) var(--term-height) auto;
+}
+.xp-statusbar {
+  display: flex;
+  gap: 8px;
+  padding: 2px 8px;
+  background: var(--xp-chrome);
+  border-top: 1px solid #aca899;
+  font-size: 11px;
+  color: #333;
+  flex-shrink: 0;
+}
+.xp-statusbar__grow {
+  flex: 1;
+}
+
+/* ---- terminal: full-height cmd console ---- */
+.xp-term {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #000;
+  color: #c0c0c0;
+  font-family: "Lucida Console", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.xp-term__log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px;
+  /* classic raised gray scrollbar */
+  scrollbar-color: #d4d0c8 #f1efe2;
+}
+.xp-term__log::-webkit-scrollbar {
+  width: 16px;
+}
+.xp-term__log::-webkit-scrollbar-track {
+  background: #f1efe2;
+}
+.xp-term__log::-webkit-scrollbar-thumb {
+  background: #d4d0c8;
+  border: 1px solid #808080;
+  border-radius: 0;
+}
+.xp-term__line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: #000;
+  border-top: 1px solid #222;
+}
+.xp-term__prompt {
+  flex-shrink: 0;
+  color: #7fcf7f;
+  white-space: nowrap;
+}
+.xp-term__input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: inherit;
+  caret-color: #fff;
+}
+.xp-term__input::placeholder {
+  color: #555;
+}
+
+/* ---- inner content: light document theme inside XP windows ----
+ * FileView/FileTree reuse dark-theme styles; on a white window body the
+ * phosphor greens wash out. Scope classic dark-on-light overrides here. */
+.xp-win-body {
+  background: #fff;
+  color: #111;
+}
+.xp-win-body .doc h1,
+.xp-win-body .letter h1 {
+  color: #0a246a;
+}
+.xp-win-body .doc h2,
+.xp-win-body .doc p,
+.xp-win-body .doc .log-org,
+.xp-win-body .spec dd,
+.xp-win-body .ide-hit {
+  color: #111;
+}
+.xp-win-body a,
+.xp-win-body .index-link {
+  color: #0000cc;
+}
+.xp-win-body a:hover,
+.xp-win-body .index-link:hover {
+  color: #ff0000;
+}
+.xp-win-body .dim,
+.xp-win-body .log-when,
+.xp-win-body .spec dt,
+.xp-win-body .tree-label,
+.xp-win-body .letter-when,
+.xp-win-body .letter-rule {
+  color: #666;
+}
+.xp-win-body .wordmark,
+.xp-win-body .tab-name,
+.xp-win-body .prompt,
+.xp-win-body .caret,
+.xp-win-body .path {
+  color: #0a246a;
+}
+/* classic raised XP buttons instead of dark pills */
+.xp-win-body .cmd,
+.xp-win-body .cmd-link {
+  min-height: 32px !important;
+  border-radius: 3px !important;
+  border: 1px solid #716f64 !important;
+  background: linear-gradient(180deg, #fff 0%, #ece9d8 100%) !important;
+  color: #111 !important;
+  font-family: Tahoma, sans-serif !important;
+  font-size: 11px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+.xp-win-body .cmd:hover,
+.xp-win-body .cmd-link:hover {
+  background: linear-gradient(180deg, #fff 0%, #e3e0cf 100%) !important;
+  color: #111 !important;
+  box-shadow: inset 0 0 0 2px #cde0ff !important;
+}
+.xp-win-body .cmd[data-state="success"] {
+  color: #0a5c0a !important;
+  border-color: #0a5c0a !important;
+}
+/* file tree rows: black text, XP blue selection */
+.xp-win-body .tree,
+.xp-win-body .tree-scroll {
+  background: #fff;
+}
+.xp-win-body .tree-item {
+  color: #111;
+  font-family: Tahoma, sans-serif;
+}
+.xp-win-body .tree-item:hover {
+  background: #e5f0ff;
+  color: #111;
+}
+.xp-win-body .tree-item[aria-current="true"] {
+  background: #316ac5;
+  color: #fff;
+}
+.xp-win-body .tree-kind {
+  color: #666;
+}
+/* misc doc bits */
+.xp-win-body .skills li {
+  border-color: #aca899;
+  color: #111;
+  background: #fff;
+}
+.xp-win-body .env {
+  background: #f5f4ea;
+  color: #111;
+  border-color: #aca899;
+}
+.xp-win-body .avatar {
+  border-color: #aca899;
+}
+.xp-win-body .letter-sign {
+  border-top-color: #aca899;
+}
+.xp-win-body .index li {
+  border-top-color: #d4d0c8;
+}
+.xp-win-body .ide .doc,
+.xp-win-body .ide .index-link,
+.xp-win-body .ide .cmd,
+.xp-win-body .ide .cmd-link {
+  font-family: Tahoma, sans-serif;
+}
+/* classic silver scrollbars instead of phosphor thumbs */
+.xp-win-body [data-slot="scroll-area-scrollbar"] {
+  background: #f1efe2;
+}
+.xp-win-body [data-slot="scroll-area-thumb"] {
+  background: #c0c0c0 !important;
+  border: 1px solid #fff;
+  border-radius: 0 !important;
+  box-shadow: inset -1px -1px 0 #808080, inset 1px 1px 0 #fff;
+}
+.xp-win-body :focus-visible {
+  outline-color: #0a246a;
+}
+
+/* inactive windows: dimmed title + grayscale buttons */
+.xp-win:not(.is-active) .xp-titlebar {
+  color: #2b2b2b;
+  text-shadow: none;
+}
+.xp-win:not(.is-active) .xp-tbtn {
+  filter: grayscale(0.7) brightness(0.9);
+}
+
+/* ---- WordPad: serif document + ruler ---- */
+.xp-wordpad {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+}
+.xp-wordpad__ruler {
+  flex-shrink: 0;
+  height: 18px;
+  background:
+    repeating-linear-gradient(90deg, #808080 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, #b0b0b0 0 1px, transparent 1px 12px),
+    linear-gradient(180deg, #fff, #f1efe2);
+  background-size: 100% 9px, 100% 6px, 100% 100%;
+  background-position: 24px 0, 24px 0, 0 0;
+  background-repeat: repeat-x;
+  border-bottom: 1px solid #aca899;
+}
+.xp-wordpad__scroll {
+  flex: 1;
+  min-height: 0;
+}
+.xp-wordpad__page {
+  max-width: 68ch;
+  margin: 0 auto;
+  padding: 20px 28px 32px;
+  background: #fff;
+  color: #111;
+}
+.xp-wordpad__page .doc,
+.xp-wordpad__page .doc p,
+.xp-wordpad__page .doc h2,
+.xp-wordpad__page .spec dd {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.xp-wordpad__page .doc h1 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* ---- Log Viewer: console header + monospace records + filter ---- */
+.xp-logview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+}
+.xp-logview__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: linear-gradient(180deg, #f5f4ea, #e3e0cf);
+  border-bottom: 1px solid #aca899;
+  font-size: 11px;
+  color: #333;
+}
+.xp-logview__file {
+  font-weight: 700;
+  font-family: Consolas, monospace;
+  white-space: nowrap;
+}
+.xp-logview__count {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #666;
+}
+.xp-logview__filter {
+  width: 130px;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-family: Tahoma, sans-serif;
+  border: 1px solid #7f9db9;
+  background: #fff;
+  color: #111;
+  outline: none;
+}
+.xp-logview__scroll {
+  flex: 1;
+  min-height: 0;
+}
+.xp-logview__body {
+  padding: 10px 12px 20px;
+}
+.xp-logview__body .doc,
+.xp-logview__body .doc p,
+.xp-logview__body .doc h2,
+.xp-logview__body .log-org,
+.xp-logview__body .spec dd {
+  font-family: Consolas, "Lucida Console", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #111;
+}
+.xp-logview__body .doc h1 {
+  font-family: Consolas, monospace;
+  font-size: 14px;
+}
+.xp-logview__body .log-when {
+  color: #0a5c0a;
+  font-weight: 700;
+}
+
+/* ---- Contacts: address-book card + batch strip ---- */
+.xp-shellview {
+  padding: 12px 14px 20px;
+  background: #fff;
+  color: #111;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.xp-contact__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #faf9f2, #e8e5d5);
+  border: 1px solid #aca899;
+}
+.xp-contact__head img {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.xp-contact__head h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a246a;
+}
+.xp-contact__head p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #666;
+}
+.xp-shellview__term {
+  margin: 0;
+  padding: 10px 12px;
+  background: #000;
+  color: #c0c0c0;
+  border: 1px solid #808080;
+  font-family: Consolas, "Lucida Console", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.xp-shellview__card {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.xp-shellview__card div {
+  display: grid;
+  grid-template-columns: 10ch minmax(0, 1fr);
+  gap: 8px;
+}
+.xp-shellview__card dt {
+  color: #666;
+  font-size: 11px;
+}
+.xp-shellview__card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.xp-shellview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---- Internet Explorer 6 ---- */
+.xp-ie {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #f1efe2;
+  color: #111;
+  font-family: Tahoma, sans-serif;
+}
+.xp-ie__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 4px 6px;
+  background: linear-gradient(180deg, #faf9f2 0%, #e8e5d5 50%, #d4d0c8 100%);
+  border-bottom: 1px solid #aca899;
+}
+.xp-ie__back {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #2e7d32;
+  background: radial-gradient(circle at 35% 30%, #8fd18f, #3c9c3c 70%);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  transform: rotate(180deg);
+}
+.xp-ie__back:disabled {
+  background: radial-gradient(circle at 35% 30%, #cfcfcf, #9a9a9a 70%);
+  border-color: #808080;
+  cursor: default;
+}
+.xp-ie__nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #808080;
+  background: radial-gradient(circle at 35% 30%, #fff, #d4d0c8 70%);
+  color: #3c9c3c;
+  font-size: 15px;
+  cursor: pointer;
+}
+.xp-ie__nav:nth-of-type(2) {
+  color: #808080;
+}
+.xp-ie__nav:nth-of-type(3) {
+  color: #c09800;
+}
+.xp-ie__nav:disabled {
+  color: #b0b0b0;
+  cursor: default;
+}
+.xp-ie__addrbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 6px;
+  background: #ece9d8;
+  border-bottom: 1px solid #aca899;
+  font-size: 11px;
+  color: #333;
+}
+.xp-ie__addrbar label {
+  color: #666;
+}
+.xp-ie__addrbar input {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 12px;
+  border: 1px solid #7f9db9;
+  background: #fff;
+  color: #111;
+  outline: none;
+}
+.xp-ie__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #111;
+  background: linear-gradient(180deg, #fff, #ece9d8);
+  border: 1px solid #716f64;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.xp-ie__go span {
+  color: #3c9c3c;
+  font-weight: 700;
+}
+.xp-ie__links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  background: #ece9d8;
+  border-bottom: 1px solid #aca899;
+  font-size: 11px;
+  color: #333;
+}
+.xp-ie__links button,
+.xp-ie__links a {
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  font-size: 11px;
+  color: #0000cc;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.xp-ie__page {
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+.xp-ie__doc {
+  padding: 16px 20px 28px;
+  max-width: 72ch;
+  color: #111;
+}
+.xp-ie__doc h1 {
+  margin: 0 0 8px;
+  font-size: 21px;
+  font-weight: 700;
+  color: #0a246a;
+}
+.xp-ie__crumb {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: #666;
+}
+.xp-ie__lede {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.xp-ie__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.xp-ie__cards li {
+  border: 1px solid #aca899;
+  background: #fffff8;
+  padding: 10px 12px;
+}
+.xp-ie__cards p {
+  margin: 4px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.xp-ie__title {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0000cc;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
+}
+.xp-ie__meta {
+  color: #555;
+  font-size: 11px;
+}
+.xp-ie__spec {
+  width: 100%;
+  margin: 0 0 12px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.xp-ie__spec th,
+.xp-ie__spec td {
+  border: 1px solid #aca899;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+.xp-ie__spec th {
+  width: 12ch;
+  background: #f1efe2;
+  color: #333;
+  font-weight: 700;
+}
+.xp-ie__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.xp-ie__actions button {
+  min-height: 28px;
+  padding: 0 14px;
+  font-size: 12px;
+  color: #111;
+  background: linear-gradient(180deg, #fff, #ece9d8);
+  border: 1px solid #716f64;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.xp-ie__linklike {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #0000cc;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+}
+.xp-ie__doc code {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  background: #f1efe2;
+  padding: 0 4px;
+}
+
+/* ---- Camera: viewfinder + filmstrip ---- */
+.xp-cam {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #111;
+  color: #eee;
+}
+.xp-cam__finder {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #000;
+  overflow: hidden;
+}
+.xp-cam__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.xp-cam__video.is-hidden {
+  visibility: hidden;
+}
+.xp-cam__off {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  text-align: center;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.03) 3px 4px),
+    #0a0a0a;
+}
+.xp-cam__nosignal {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #808080;
+}
+.xp-cam__note {
+  margin: 0;
+  max-width: 32ch;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #999;
+}
+.xp-cam__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 6px 8px;
+  background: linear-gradient(180deg, #faf9f2, #e3e0cf);
+  border-top: 1px solid #aca899;
+}
+.xp-cam__toolbar .cmd {
+  color: #111;
+}
+.xp-cam__count {
+  flex: 1;
+  text-align: right;
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+}
+.xp-cam__strip {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  max-height: 132px;
+  overflow-x: auto;
+  padding: 8px;
+  background: #ece9d8;
+  border-top: 1px solid #aca899;
+}
+.xp-cam__shot {
+  margin: 0;
+  flex-shrink: 0;
+  width: 112px;
+  background: #fff;
+  border: 1px solid #aca899;
+  padding: 4px;
+}
+.xp-cam__shot img {
+  display: block;
+  width: 100%;
+  height: 64px;
+  object-fit: cover;
+  background: #000;
+}
+.xp-cam__shot figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  font-size: 11px;
+}
+.xp-cam__shot a {
+  color: #0000cc;
+}
+.xp-cam__shot button {
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  font-size: 11px;
+  color: #a00;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---- Paint mode: XP MS Paint layout over the live feed ---- */
+.xp-mode-swap {
+  animation: xp-mode-in 140ms ease-out;
+}
+@keyframes xp-mode-in {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.xp-paint {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #ece9d8;
+  color: #111;
+  font-family: Tahoma, sans-serif;
+}
+.xp-paint__main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.xp-paint__tools {
+  display: grid;
+  grid-template-columns: repeat(2, 30px);
+  grid-auto-rows: 30px;
+  gap: 3px;
+  align-content: start;
+  flex-shrink: 0;
+  padding: 5px 4px;
+  background: #ece9d8;
+  border-right: 1px solid #aca899;
+  overflow-y: auto;
+}
+.xp-paint__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #111;
+  background: linear-gradient(180deg, #fff, #e3e0cf);
+  border: 1px solid #716f64;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0;
+}
+.xp-paint__tool.is-active {
+  background: linear-gradient(180deg, #cde0ff, #a8c8f8);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35);
+  outline: 1px dotted #0a246a;
+  outline-offset: -3px;
+}
+.xp-paint__tool:focus-visible {
+  outline: 2px solid #0a246a;
+  outline-offset: 1px;
+}
+/* the canvas: live feed fills it edge-to-edge, like an image in Paint */
+.xp-paint__canvaswrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: #000;
+  overflow: hidden;
+}
+.xp-paint__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.xp-paint__video.is-zoom {
+  transform: scale(1.8);
+}
+.xp-paint__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xp-paint__handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #0a3dcc;
+  border: 1px solid #fff;
+  pointer-events: none;
+}
+.xp-paint__handle--e {
+  right: 1px;
+  top: calc(50% - 4px);
+}
+.xp-paint__handle--s {
+  bottom: 1px;
+  left: calc(50% - 4px);
+}
+.xp-paint__handle--se {
+  right: 1px;
+  bottom: 1px;
+  cursor: nwse-resize;
+}
+.xp-paint__captionbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: #ece9d8;
+  border-top: 1px solid #aca899;
+  font-size: 11px;
+  color: #333;
+}
+.xp-paint__captionbar input {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 12px;
+  border: 1px solid #7f9db9;
+  background: #fff;
+  color: #111;
+  outline: none;
+}
+.xp-paint__colors {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 5px 8px;
+  background: #ece9d8;
+  border-top: 1px solid #aca899;
+}
+.xp-paint__colorbox {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 30px;
+}
+.xp-paint__colorbg,
+.xp-paint__colorfg {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #716f64;
+}
+.xp-paint__colorbg {
+  right: 0;
+  bottom: 0;
+}
+.xp-paint__colorfg {
+  left: 0;
+  top: 0;
+}
+.xp-paint__swatches {
+  display: grid;
+  grid-template-columns: repeat(14, 17px);
+  grid-template-rows: repeat(2, 15px);
+  gap: 2px;
+}
+.xp-paint__swatch {
+  border: 1px solid #808080;
+  padding: 0;
+  cursor: pointer;
+}
+.xp-paint__capture {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.xp-cam__strip.is-compact {
+  max-height: 100px;
+}
+.xp-cam__strip.is-compact .xp-cam__shot {
+  width: 84px;
+}
+.xp-cam__strip.is-compact .xp-cam__shot img {
+  height: 46px;
+}
+.xp-paint__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  background: #ece9d8;
+  border-top: 1px solid #aca899;
+  font-size: 11px;
+  color: #333;
+}
+.xp-paint__hint {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xp-paint__modebtn {
+  min-height: 24px;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #111;
+  background: linear-gradient(180deg, #fff, #ece9d8);
+  border: 1px solid #716f64;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ---- taskbar ---- */
+
+/* ---- taskbar ---- */
+.xp-taskbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--xp-task-h);
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(180deg, #3d8bff 0%, #2970ef 9%, #245edb 30%, #245edb 92%, #1941a5 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  z-index: 9000;
+}
+.xp-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 26px 0 14px;
+  border: 0;
+  background: linear-gradient(180deg, #8fd18f 0%, #4caf50 8%, #3c9c3c 45%, #2e7d32 92%, #256428 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.65);
+  border-radius: 0 16px 16px 0;
+  cursor: pointer;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.xp-start img {
+  border-radius: 3px;
+  pointer-events: none;
+}
+.xp-start:hover {
+  filter: brightness(1.1);
+}
+.xp-start:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+.xp-tasks {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  overflow-x: auto;
+  min-width: 0;
+}
+.xp-task {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 120px;
+  max-width: 200px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.xp-task img {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.xp-task.is-on {
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+.xp-task:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+.xp-tray {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: rgba(0, 0, 0, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* ---- start menu: two-column XP style (programs | places) ---- */
+.xp-startmenu {
+  position: absolute;
+  left: 2px;
+  bottom: var(--xp-task-h);
+  width: min(430px, 94vw);
+  background: #fff;
+  color: var(--xp-ink);
+  border: 1px solid #0831d9;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  box-shadow: 4px -4px 16px rgba(0, 0, 0, 0.55);
+  z-index: 9500;
+}
+.xp-startmenu__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(180deg, #3d8bff 0%, #245edb 60%, #1941a5 100%);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+.xp-startmenu__head img {
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  background: #fff;
+}
+.xp-startmenu__body {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  min-height: 260px;
+  max-height: 52vh;
+}
+.xp-startmenu__list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  display: grid;
+  gap: 1px;
+  align-content: start;
+  overflow: auto;
+  background: #fff;
+}
+.xp-startmenu__list--places {
+  background: linear-gradient(180deg, #5a8def 0%, #3a6fd8 60%, #2f5cc4 100%);
+  border-left: 1px solid #1c3f94;
+}
+.xp-startmenu__list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 3px;
+  color: var(--xp-ink);
+}
+.xp-startmenu__list button:hover {
+  background: #316ac5;
+  color: #fff;
+}
+.xp-startmenu__list--places button {
+  color: #fff;
+  font-weight: 700;
+}
+.xp-startmenu__list--places button:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.xp-startmenu__sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.75;
+}
+.xp-startmenu__foot {
+  padding: 8px 10px;
+  background: linear-gradient(180deg, #3d8bff 0%, #245edb 60%, #1941a5 100%);
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+.xp-startmenu__foot button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+.xp-startmenu__foot button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.xp-startmenu__power {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* ---- XP boot: Welcome screen (dark bands, light middle, orange rule) ---- */
+.xp-boot {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  grid-template-rows: 11% 1fr 11%;
+  background: #5b7ed6;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+}
+.xp-boot::before {
+  /* top dark band */
+  content: "";
+  grid-row: 1;
+  background: linear-gradient(180deg, #0a246a 0%, #123a9e 100%);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.55);
+}
+.xp-boot::after {
+  /* bottom dark band + orange rule */
+  content: "";
+  grid-row: 3;
+  background: linear-gradient(180deg, #123a9e 0%, #0a246a 100%);
+  border-top: 2px solid #e8a33d;
+}
+.xp-boot__brand {
+  position: absolute;
+  top: calc(11% - 34px);
+  right: 22px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+.xp-boot__brand sup {
+  font-size: 0.6em;
+  color: #e8a33d;
+}
+.xp-boot__brand span {
+  font-weight: 400;
+  opacity: 0.85;
+}
+.xp-boot__logo {
+  grid-row: 2;
+  align-self: center;
+  justify-self: end;
+  margin: 0;
+  padding-right: 16%;
+  font-size: clamp(40px, 8vw, 84px);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 2px 2px 3px rgba(10, 36, 106, 0.65);
+  /* soft top-left glow like the reference */
+  filter: drop-shadow(0 0 60px rgba(255, 255, 255, 0.35));
+}
+.xp-boot__dots {
+  display: inline-flex;
+  gap: 8px;
+  margin-left: 18px;
+  vertical-align: baseline;
+}
+.xp-boot__dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 1px 1px 2px rgba(10, 36, 106, 0.6);
+  animation: xp-boot-dot 1.2s ease-in-out infinite;
+}
+.xp-boot__dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.xp-boot__dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes xp-boot-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+.xp-boot__hint {
+  position: absolute;
+  bottom: calc(11% + 14px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 2px rgba(10, 36, 106, 0.6);
+}
+.xp-boot__skip {
+  position: absolute;
+  bottom: calc(11% - 44px);
+  right: 16px;
+  min-height: 32px;
+  padding: 0 16px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(10, 36, 106, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+}
+.xp-boot__skip:hover {
+  background: rgba(10, 36, 106, 0.85);
+}
+.xp-boot:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+@media (max-width: 640px) {
+  .xp-icons {
+    max-width: 190px;
+  }
+  .xp-icon {
+    width: 80px;
+  }
+  /* hybrid-minimal: windows behave maximized on small screens */
+  .xp-win:not(.is-max) {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-boot__dots i {
+    animation: none;
+    opacity: 1;
+  }
+  .xp-mode-swap {
+    animation: none;
+  }
+}
