@@ -5,6 +5,7 @@ import { BootGate } from "@/components/boot-intro";
 import { IdeWorkspace } from "@/components/ide-workspace";
 import { Welcome } from "@/components/welcome";
 import { Workspace } from "@/components/workspace";
+import { XpDesktop, type XpInitial } from "@/components/xp/desktop";
 import {
   applyDocumentTheme,
   readStoredSession,
@@ -58,6 +59,14 @@ function commit(next: SessionView, persist: boolean) {
   emit();
 }
 
+function isClassic(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).has("classic");
+  } catch {
+    return false;
+  }
+}
+
 export function SessionGate() {
   const view = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
@@ -76,11 +85,20 @@ export function SessionGate() {
   }, []);
 
   if (view === "unknown") return <BootGate />;
-  if (view === "chooser") {
-    return <Welcome onPick={pick} onBack={fromWorkspace ? back : undefined} />;
+
+  // ?classic=1 preserves the pre-XP Welcome / Unix / IDE screens verbatim.
+  if (typeof window !== "undefined" && isClassic()) {
+    if (view === "chooser") {
+      return <Welcome onPick={pick} onBack={fromWorkspace ? back : undefined} />;
+    }
+    if (view === "ide") {
+      return <IdeWorkspace onChangeSession={toChooser} />;
+    }
+    return <Workspace onChangeSession={toChooser} />;
   }
-  if (view === "ide") {
-    return <IdeWorkspace onChangeSession={toChooser} />;
-  }
-  return <Workspace onChangeSession={toChooser} />;
+
+  // Redirect mapping: old ?theme= links open the matching XP window.
+  const initial: XpInitial =
+    view === "unix" ? "terminal" : view === "ide" ? "editor" : "welcome";
+  return <XpDesktop key={view} initial={initial} />;
 }

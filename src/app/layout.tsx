@@ -5,6 +5,7 @@ import { THEME_BOOT_SCRIPT } from "@/lib/session";
 import "./globals.css";
 import "./welcome.css";
 import "./ide.css";
+import "./xp.css";
 
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
