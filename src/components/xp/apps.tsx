@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent as PaintPointerEvent } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileTree } from "@/components/file-tree";
 import { FileView } from "@/components/file-view";
@@ -215,12 +215,12 @@ export function ExplorerApp({
     [dir, onOpenFile],
   );
   return (
-    <div style={{ display: "flex", height: "100%", background: "#fff", color: "#111" }}>
-      <div style={{ width: 180, flexShrink: 0, borderRight: "1px solid #aca899", overflow: "auto" }}>
+    <div className="xp-explorer">
+      <div className="xp-explorer__tree">
         <FileTree openPath={dir} onOpen={open} skin="ide" />
       </div>
-      <div style={{ flex: 1, minWidth: 0, overflow: "auto", padding: "12px 14px" }}>
-        <p style={{ margin: "0 0 8px", fontSize: 11, color: "#666" }}>
+      <div className="xp-explorer__main">
+        <p className="xp-explorer__path">
           {dir.replace(HOME, "My Computer › fadlan")}
         </p>
         <FileView
@@ -385,20 +385,16 @@ type FacingMode = "user" | "environment";
 type PaintTool = { id: string; label: string; hint: string; glyph: string };
 
 const PAINT_TOOLS: PaintTool[] = [
-  { id: "freeform", label: "Free-Form Select", hint: "Selects a free-form part of the picture.", glyph: "◌" },
-  { id: "select", label: "Select", hint: "Selects a rectangular part of the picture.", glyph: "▢" },
-  { id: "eraser", label: "Eraser", hint: "Erases a portion of the picture.", glyph: "▅" },
-  { id: "fill", label: "Fill With Color", hint: "Fills an enclosed area with color.", glyph: "◩" },
-  { id: "picker", label: "Pick Color", hint: "Picks a color from the live picture.", glyph: "◈" },
-  { id: "magnifier", label: "Magnifier", hint: "Zooms the live picture in and out.", glyph: "⌕" },
   { id: "pencil", label: "Pencil", hint: "Draws a free-form line one pixel wide.", glyph: "✎" },
   { id: "brush", label: "Brush", hint: "Draws with a brush.", glyph: "✒" },
   { id: "airbrush", label: "Airbrush", hint: "Draws with an airbrush.", glyph: "⁂" },
+  { id: "eraser", label: "Eraser", hint: "Erases back to the live picture.", glyph: "▅" },
+  { id: "fill", label: "Fill With Color", hint: "Fills an enclosed area with color.", glyph: "◩" },
+  { id: "picker", label: "Pick Color", hint: "Picks a color from the live picture.", glyph: "◈" },
+  { id: "magnifier", label: "Magnifier", hint: "Zooms the live picture in and out.", glyph: "⌕" },
   { id: "text", label: "Text", hint: "Adds a caption, burned into captures.", glyph: "A" },
   { id: "line", label: "Line", hint: "Draws a straight line.", glyph: "╲" },
-  { id: "curve", label: "Curve", hint: "Draws a curved line.", glyph: "∿" },
   { id: "rect", label: "Rectangle", hint: "Draws a rectangle.", glyph: "▭" },
-  { id: "polygon", label: "Polygon", hint: "Draws a polygon.", glyph: "⬠" },
   { id: "ellipse", label: "Ellipse", hint: "Draws an ellipse.", glyph: "⬯" },
   { id: "roundrect", label: "Rounded Rectangle", hint: "Draws a rounded rectangle.", glyph: "▨" },
 ];
@@ -410,6 +406,10 @@ const PAINT_COLORS = [
   "#003366", "#202060", "#660066", "#F5F4EA", "#E8A33D", "#B5E61D", "#99D9EA",
 ];
 
+const BRUSH_SIZES = [3, 7, 12];
+
+type DrawPoint = { x: number; y: number };
+
 export function CameraApp() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -417,11 +417,23 @@ export function CameraApp() {
   const [facing, setFacing] = useState<FacingMode>("user");
   const [shots, setShots] = useState<string[]>([]);
   const [view, setView] = useState<"camera" | "paint">("camera");
-  const [tool, setTool] = useState("select");
+  const [tool, setTool] = useState("pencil");
   const [fg, setFg] = useState("#000000");
   const [bg, setBg] = useState("#FFFFFF");
   const [caption, setCaption] = useState("");
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
+  const [mirrored, setMirrored] = useState(true);
+  const [brushSize, setBrushSize] = useState(7);
+  const drawRef = useRef<HTMLCanvasElement | null>(null);
+  const savedArt = useRef<string | null>(null);
+  const snapRef = useRef<HTMLCanvasElement | null>(null);
+  const strokeRef = useRef<{
+    drawing: boolean;
+    lastX: number;
+    lastY: number;
+    startX: number;
+    startY: number;
+  }>({ drawing: false, lastX: 0, lastY: 0, startX: 0, startY: 0 });
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -460,7 +472,7 @@ export function CameraApp() {
     if (node && streamRef.current) node.srcObject = streamRef.current;
   }, []);
 
-  const capture = useCallback(() => {
+  const capture = useCallback(async () => {
     const v = videoRef.current;
     if (!v || !v.videoWidth) return;
     const c = document.createElement("canvas");
@@ -468,7 +480,31 @@ export function CameraApp() {
     c.height = v.videoHeight;
     const ctx = c.getContext("2d");
     if (!ctx) return;
+    // What-you-see-is-what-you-save: mirror the snapshot too when enabled.
+    ctx.save();
+    if (mirrored) {
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
+    }
     ctx.drawImage(v, 0, 0);
+    ctx.restore();
+    // Paint layer on top of the feed (visible canvas, or saved snapshot).
+    const art = drawRef.current;
+    if (art && art.width > 1 && art.height > 1) {
+      ctx.drawImage(art, 0, 0, c.width, c.height);
+    } else if (savedArt.current) {
+      try {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const im = new Image();
+          im.onload = () => resolve(im);
+          im.onerror = () => reject(new Error("art load failed"));
+          im.src = savedArt.current as string;
+        });
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+      } catch {
+        /* art unavailable — ship the bare frame */
+      }
+    }
     const text = caption.trim();
     if (text) {
       const fs = Math.max(16, Math.round(c.height * 0.055));
@@ -483,7 +519,7 @@ export function CameraApp() {
       ctx.fillText(text, pad, c.height - barH + pad);
     }
     setShots((prev) => [c.toDataURL("image/png"), ...prev].slice(0, 12));
-  }, [caption, fg]);
+  }, [caption, fg, mirrored]);
 
   const switchCamera = useCallback(() => {
     const next: FacingMode = facing === "user" ? "environment" : "user";
@@ -491,9 +527,336 @@ export function CameraApp() {
     void enable(next);
   }, [enable, facing]);
 
+  /* Mirror is deliberately discreet: no dedicated button. Toggle by
+   * double-clicking the preview/canvas, clicking the dimensions readout,
+   * or pressing M while focus is inside this window. */
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const toggleMirror = useCallback(() => setMirrored((m) => !m), []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key.toLowerCase() !== "m") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      if (!rootRef.current?.contains(document.activeElement)) return;
+      e.preventDefault();
+      setMirrored((m) => !m);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const focusRoot = useCallback(() => {
+    rootRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  /* ---------- Paint drawing engine: transparent layer over the feed ---------- */
+
+  const isShapeTool = (id: string) =>
+    id === "line" || id === "rect" || id === "ellipse" || id === "roundrect";
+
+  // Sizes the visible drawing canvas to its wrapper (crisp on hidpi),
+  // preserving existing strokes across resizes.
+  const fitDrawCanvas = (node: HTMLCanvasElement) => {
+    const wrap = node.parentElement;
+    const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
+    const w = wrap?.clientWidth ?? 0;
+    const h = wrap?.clientHeight ?? 0;
+    if (w < 2 || h < 2) return null;
+    const bw = Math.round(w * dpr);
+    const bh = Math.round(h * dpr);
+    const ctx = node.getContext("2d");
+    if (!ctx) return null;
+    if (node.width !== bw || node.height !== bh) {
+      let prev: HTMLCanvasElement | null = null;
+      if (node.width > 0 && node.height > 0) {
+        prev = document.createElement("canvas");
+        prev.width = node.width;
+        prev.height = node.height;
+        prev.getContext("2d")?.drawImage(node, 0, 0);
+      }
+      node.width = bw;
+      node.height = bh;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (prev) ctx.drawImage(prev, 0, 0, w, h);
+    } else {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    return { ctx, w, h, dpr };
+  };
+
+  // Mounted afresh each time Paint mode opens: size it and restore strokes
+  // saved when leaving Paint mode.
+  const drawAttach = useCallback((node: HTMLCanvasElement | null) => {
+    drawRef.current = node;
+    if (!node) return;
+    fitDrawCanvas(node);
+    const saved = savedArt.current;
+    if (saved) {
+      savedArt.current = null;
+      const img = new Image();
+      img.onload = () => {
+        const fit = fitDrawCanvas(node);
+        if (fit) fit.ctx.drawImage(img, 0, 0, fit.w, fit.h);
+      };
+      img.src = saved;
+    }
+  }, []);
+
+  const snapshotDraw = () => {
+    const node = drawRef.current;
+    if (!node || node.width < 2) return;
+    let snap = snapRef.current;
+    if (!snap) {
+      snap = document.createElement("canvas");
+      snapRef.current = snap;
+    }
+    snap.width = node.width;
+    snap.height = node.height;
+    snap.getContext("2d")?.drawImage(node, 0, 0);
+  };
+
+  const restoreDraw = () => {
+    const node = drawRef.current;
+    const snap = snapRef.current;
+    if (!node || !snap || snap.width < 2) return;
+    const fit = fitDrawCanvas(node);
+    fit?.ctx.drawImage(snap, 0, 0, fit.w, fit.h);
+  };
+
+  const paintStroke = (
+    ctx: CanvasRenderingContext2D,
+    color: string,
+    width: number,
+    composite: GlobalCompositeOperation,
+    from: DrawPoint,
+    to: DrawPoint,
+  ) => {
+    ctx.save();
+    ctx.globalCompositeOperation = composite;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const sprayPaint = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string) => {
+    ctx.save();
+    ctx.fillStyle = color;
+    const n = 12 + radius * 4;
+    for (let i = 0; i < n; i += 1) {
+      const a = Math.random() * Math.PI * 2;
+      const d = Math.sqrt(Math.random()) * radius;
+      ctx.fillRect(x + Math.cos(a) * d, y + Math.sin(a) * d, 1.5, 1.5);
+    }
+    ctx.restore();
+  };
+
+  const paintShape = (ctx: CanvasRenderingContext2D, kind: string, a: DrawPoint, b: DrawPoint) => {
+    const x = Math.min(a.x, b.x);
+    const y = Math.min(a.y, b.y);
+    const w = Math.abs(a.x - b.x);
+    const h = Math.abs(a.y - b.y);
+    ctx.save();
+    ctx.strokeStyle = fg;
+    ctx.lineWidth = Math.max(2, brushSize);
+    ctx.beginPath();
+    if (kind === "line") {
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+    } else if (kind === "ellipse") {
+      ctx.ellipse(x + w / 2, y + h / 2, Math.max(0.5, w / 2), Math.max(0.5, h / 2), 0, 0, Math.PI * 2);
+    } else if (kind === "roundrect") {
+      const r = Math.min(12, w / 4, h / 4);
+      const withRound = ctx as CanvasRenderingContext2D & {
+        roundRect?: (x: number, y: number, w: number, h: number, r: number) => void;
+      };
+      if (typeof withRound.roundRect === "function") withRound.roundRect(x, y, w, h, r);
+      else ctx.rect(x, y, w, h);
+    } else {
+      ctx.rect(x, y, w, h);
+    }
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const floodFill = (
+    ctx: CanvasRenderingContext2D,
+    bw: number,
+    bh: number,
+    sx: number,
+    sy: number,
+    hex: string,
+  ) => {
+    const img = ctx.getImageData(0, 0, bw, bh);
+    const d = img.data;
+    const fr = parseInt(hex.slice(1, 3), 16);
+    const fgC = parseInt(hex.slice(3, 5), 16);
+    const fb = parseInt(hex.slice(5, 7), 16);
+    const at = (x: number, y: number) => (y * bw + x) * 4;
+    if (sx < 0 || sy < 0 || sx >= bw || sy >= bh) return;
+    const si = at(sx, sy);
+    const tr = d[si];
+    const tg = d[si + 1];
+    const tb = d[si + 2];
+    const ta = d[si + 3];
+    const tol = 48;
+    const isTarget = (i: number) =>
+      Math.abs(d[i] - tr) <= tol &&
+      Math.abs(d[i + 1] - tg) <= tol &&
+      Math.abs(d[i + 2] - tb) <= tol &&
+      Math.abs(d[i + 3] - ta) <= tol;
+    if (Math.abs(tr - fr) <= tol && Math.abs(tg - fgC) <= tol && Math.abs(tb - fb) <= tol && ta > 200) {
+      return;
+    }
+    const stack: Array<[number, number]> = [[sx, sy]];
+    let guard = bw * bh;
+    while (stack.length > 0 && guard-- > 0) {
+      const [x, y] = stack.pop() as [number, number];
+      if (x < 0 || y < 0 || x >= bw || y >= bh) continue;
+      const i = at(x, y);
+      if (!isTarget(i)) continue;
+      d[i] = fr;
+      d[i + 1] = fgC;
+      d[i + 2] = fb;
+      d[i + 3] = 255;
+      stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    ctx.putImageData(img, 0, 0);
+  };
+
+  const pickColor = (ctx: CanvasRenderingContext2D, bw: number, bh: number, sx: number, sy: number) => {
+    const x = Math.min(bw - 1, Math.max(0, sx));
+    const y = Math.min(bh - 1, Math.max(0, sy));
+    const px = ctx.getImageData(x, y, 1, 1).data;
+    if (px[3] < 16) return;
+    const toHex = (v: number) => v.toString(16).padStart(2, "0");
+    setFg(`#${toHex(px[0])}${toHex(px[1])}${toHex(px[2])}`);
+  };
+
+  const drawPos = (e: PaintPointerEvent<HTMLCanvasElement>): DrawPoint => {
+    const r = e.currentTarget.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+
+  const onDrawDown = (e: PaintPointerEvent<HTMLCanvasElement>) => {
+    if (!live || e.button !== 0) return;
+    e.preventDefault();
+    const node = drawRef.current;
+    if (!node) return;
+    const fit = fitDrawCanvas(node);
+    if (!fit) return;
+    try {
+      node.setPointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
+    const p = drawPos(e);
+    if (tool === "fill") {
+      floodFill(
+        fit.ctx,
+        node.width,
+        node.height,
+        Math.floor(p.x * fit.dpr),
+        Math.floor(p.y * fit.dpr),
+        fg,
+      );
+      return;
+    }
+    if (tool === "picker") {
+      pickColor(
+        fit.ctx,
+        node.width,
+        node.height,
+        Math.floor(p.x * fit.dpr),
+        Math.floor(p.y * fit.dpr),
+      );
+      return;
+    }
+    snapshotDraw();
+    strokeRef.current = { drawing: true, lastX: p.x, lastY: p.y, startX: p.x, startY: p.y };
+    if (tool === "airbrush") sprayPaint(fit.ctx, p.x, p.y, brushSize, fg);
+  };
+
+  const onDrawMove = (e: PaintPointerEvent<HTMLCanvasElement>) => {
+    const s = strokeRef.current;
+    if (!s.drawing || !live) return;
+    e.preventDefault();
+    const node = drawRef.current;
+    if (!node) return;
+    const fit = fitDrawCanvas(node);
+    if (!fit) return;
+    const p = drawPos(e);
+    if (isShapeTool(tool)) {
+      restoreDraw();
+      paintShape(fit.ctx, tool, { x: s.startX, y: s.startY }, p);
+      return;
+    }
+    if (tool === "airbrush") {
+      sprayPaint(fit.ctx, p.x, p.y, brushSize, fg);
+      s.lastX = p.x;
+      s.lastY = p.y;
+      return;
+    }
+    const width = tool === "eraser" ? brushSize * 2 : tool === "brush" ? brushSize : 2;
+    paintStroke(fit.ctx, fg, width, tool === "eraser" ? "destination-out" : "source-over", { x: s.lastX, y: s.lastY }, p);
+    s.lastX = p.x;
+    s.lastY = p.y;
+  };
+
+  const endStroke = (e: PaintPointerEvent<HTMLCanvasElement>) => {
+    const s = strokeRef.current;
+    if (!s.drawing) return;
+    s.drawing = false;
+    if (isShapeTool(tool) && live) {
+      const node = drawRef.current;
+      if (!node) return;
+      const fit = fitDrawCanvas(node);
+      if (!fit) return;
+      const p = drawPos(e);
+      restoreDraw();
+      paintShape(fit.ctx, tool, { x: s.startX, y: s.startY }, p);
+    }
+  };
+
+  const clearDrawing = () => {
+    const node = drawRef.current;
+    if (node) {
+      const fit = fitDrawCanvas(node);
+      fit?.ctx.clearRect(0, 0, fit.w, fit.h);
+    }
+    savedArt.current = null;
+  };
+
+  // Drawings survive mode switches via a saved snapshot (no remount loss).
+  const goPaint = () => setView("paint");
+  const goCamera = () => {
+    const node = drawRef.current;
+    if (node && node.width > 1) {
+      try {
+        savedArt.current = node.toDataURL("image/png");
+      } catch {
+        savedArt.current = null;
+      }
+    }
+    setView("camera");
+  };
+
   const live = status === "live";
-  const activeTool = PAINT_TOOLS.find((t) => t.id === tool) ?? PAINT_TOOLS[1];
+  const activeTool = PAINT_TOOLS.find((t) => t.id === tool) ?? PAINT_TOOLS[0];
   const zoomed = view === "paint" && tool === "magnifier" && live;
+  const camVideoClass = ["xp-cam__video", live ? "" : "is-hidden", mirrored ? "is-mirror" : ""]
+    .filter(Boolean)
+    .join(" ");
+  const paintVideoClass = ["xp-paint__video", zoomed ? "is-zoom" : "", mirrored ? "is-mirror" : ""]
+    .filter(Boolean)
+    .join(" ");
 
   const videoEl = (className: string) => (
     <video
@@ -503,6 +866,8 @@ export function CameraApp() {
       playsInline
       muted
       aria-label="Camera preview"
+      title={mirrored ? "Mirror is on — double-click for true view" : "Mirror is off — double-click for selfie view"}
+      onDoubleClick={toggleMirror}
       onLoadedMetadata={(e) => {
         const v = e.currentTarget;
         setDims({ w: v.videoWidth, h: v.videoHeight });
@@ -569,31 +934,67 @@ export function CameraApp() {
 
   if (view === "paint") {
     return (
-      <div className="xp-paint xp-mode-swap">
+      <div
+        className="xp-paint xp-mode-swap"
+        ref={rootRef}
+        tabIndex={-1}
+        onPointerDown={focusRoot}
+      >
         <div className="xp-paint__main">
-          <div className="xp-paint__tools" role="toolbar" aria-label="Paint toolbox">
-            {PAINT_TOOLS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={tool === t.id ? "xp-paint__tool is-active" : "xp-paint__tool"}
-                title={t.label}
-                aria-label={t.label}
-                aria-pressed={tool === t.id}
-                onClick={() => setTool(t.id)}
-              >
-                {t.glyph}
-              </button>
-            ))}
+          <div className="xp-paint__side">
+            <div className="xp-paint__tools" role="toolbar" aria-label="Paint toolbox">
+              {PAINT_TOOLS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={tool === t.id ? "xp-paint__tool is-active" : "xp-paint__tool"}
+                  title={t.label}
+                  aria-label={t.label}
+                  aria-pressed={tool === t.id}
+                  onClick={() => setTool(t.id)}
+                >
+                  {t.glyph}
+                </button>
+              ))}
+            </div>
+            <div className="xp-paint__options" role="group" aria-label="Brush size">
+              {BRUSH_SIZES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={brushSize === s ? "xp-paint__size is-active" : "xp-paint__size"}
+                  aria-pressed={brushSize === s}
+                  aria-label={`Brush size ${s} pixels`}
+                  title={`${s}px brush`}
+                  onClick={() => setBrushSize(s)}
+                >
+                  <span style={{ width: Math.min(18, s + 4), height: Math.min(18, s + 4) }} />
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="xp-paint__canvaswrap">
+          <div
+            className="xp-paint__canvaswrap"
+            onDoubleClick={toggleMirror}
+            title={mirrored ? "Mirror is on — double-click for true view" : "Mirror is off — double-click for selfie view"}
+          >
             {live
-              ? videoEl(zoomed ? "xp-paint__video is-zoom" : "xp-paint__video")
+              ? videoEl(paintVideoClass)
               : (
                 <div className="xp-cam__off" role="status">
                   {offStates()}
                 </div>
               )}
+            <canvas
+              ref={drawAttach}
+              className={live ? "xp-paint__draw is-live" : "xp-paint__draw"}
+              role="img"
+              aria-label={`Drawing layer. ${activeTool.label} selected. Drag to draw.`}
+              onPointerDown={onDrawDown}
+              onPointerMove={onDrawMove}
+              onPointerUp={endStroke}
+              onPointerCancel={endStroke}
+            />
             {live && tool === "text" && caption.trim() ? (
               <p className="xp-paint__caption" style={{ color: fg }}>
                 {caption.trim()}
@@ -640,19 +1041,29 @@ export function CameraApp() {
             ))}
           </div>
           <div className="xp-paint__capture">
-            <button type="button" className="cmd" disabled={!live} onClick={capture}>
+            <button type="button" className="cmd" disabled={!live} onClick={() => void capture()}>
               Capture
             </button>
             <button type="button" className="cmd" disabled={!live} onClick={switchCamera}>
               Switch
             </button>
+            <button type="button" className="cmd" onClick={clearDrawing}>
+              Clear
+            </button>
           </div>
         </div>
         {strip(true)}
-        <div className="xp-paint__status">
+          <div className="xp-paint__status">
           <span className="xp-paint__hint">{activeTool.hint}</span>
-          <span>{dims ? `${dims.w}×${dims.h}` : "—"}</span>
-          <button type="button" className="xp-paint__modebtn" onClick={() => setView("camera")}>
+          <button
+            type="button"
+            className="xp-paint__dims"
+            onClick={toggleMirror}
+            title={mirrored ? "Mirror is on — click for true view" : "Mirror is off — click for selfie view"}
+          >
+            {dims ? `${dims.w}×${dims.h}` : "—"}
+          </button>
+          <button type="button" className="xp-paint__modebtn" onClick={goCamera}>
             Camera mode
           </button>
         </div>
@@ -661,9 +1072,14 @@ export function CameraApp() {
   }
 
   return (
-    <div className="xp-cam xp-mode-swap">
+    <div
+      className="xp-cam xp-mode-swap"
+      ref={rootRef}
+      tabIndex={-1}
+      onPointerDown={focusRoot}
+    >
       <div className="xp-cam__finder">
-        {videoEl(live ? "xp-cam__video" : "xp-cam__video is-hidden")}
+        {videoEl(camVideoClass)}
         {!live ? (
           <div className="xp-cam__off" role="status">
             {offStates()}
@@ -671,7 +1087,7 @@ export function CameraApp() {
         ) : null}
       </div>
       <div className="xp-cam__toolbar" role="toolbar" aria-label="Camera controls">
-        <button type="button" className="cmd" disabled={!live} onClick={capture}>
+        <button type="button" className="cmd" disabled={!live} onClick={() => void capture()}>
           Capture
         </button>
         <button type="button" className="cmd" disabled={!live} onClick={switchCamera}>
@@ -682,7 +1098,7 @@ export function CameraApp() {
             ? "no photos yet"
             : `${shots.length} photo${shots.length === 1 ? "" : "s"} · session only`}
         </span>
-        <button type="button" className="cmd" onClick={() => setView("paint")}>
+        <button type="button" className="cmd" onClick={goPaint}>
           Paint mode
         </button>
       </div>

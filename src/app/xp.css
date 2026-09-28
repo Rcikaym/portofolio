@@ -6,7 +6,21 @@
   --xp-blue-2: #245edb;
   --xp-chrome: #ece9d8;
   --xp-chrome-2: #d4d0c8;
+  --xp-paper: #ffffff;
+  --xp-paper-warm: #f5f4ea;
+  --xp-border: #aca899;
+  --xp-border-dark: #716f64;
+  --xp-field-border: #7f9db9;
   --xp-ink: #111111;
+  --xp-muted: #595959;
+  --xp-faint: #666666;
+  --xp-navy: #0a246a;
+  --xp-link: #0000cc;
+  --xp-link-visited: #551a8b;
+  --xp-select: #316ac5;
+  --xp-select-soft: #e5f0ff;
+  --xp-ok: #0a5c0a;
+  --xp-err: #a00b00;
   --xp-green-0: #3c9c3c;
   --xp-green-1: #7fcf7f;
   --xp-task-h: 38px;
@@ -198,14 +212,23 @@ img[src*="terminal.png"] {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--xp-paper);
+  color: var(--xp-ink);
   overflow: hidden;
+  /* Container queries let window content adapt to the *window* width,
+   * not the viewport — windowed vs maximized need different layouts. */
+  container-type: inline-size;
+  container-name: xpwin;
 }
-/* reuse existing panes inside XP windows — override full-viewport sizing */
+/* reuse existing panes inside XP windows — override full-viewport sizing.
+ * The standalone IDE uses 100dvh; inside a window it must fill the body. */
 .xp-win-body .shell,
 .xp-win-body .ide {
   height: 100%;
   min-height: 0;
+  min-width: 0;
+  width: 100%;
+  flex: 1;
 }
 .xp-win-body .shell {
   grid-template-rows: auto minmax(0, 1fr) var(--term-height) auto;
@@ -285,8 +308,252 @@ img[src*="terminal.png"] {
 }
 
 /* ---- inner content: light document theme inside XP windows ----
- * FileView/FileTree reuse dark-theme styles; on a white window body the
- * phosphor greens wash out. Scope classic dark-on-light overrides here. */
+ * The standalone IDE is a dark workbench; inside an XP window it must read
+ * as a light XP app. Remap its design tokens to the Luna palette so every
+ * nested control (title, rail, side, tabs, crumbs, canvas, status, dialogs)
+ * inherits consistent, high-contrast colors instead of phosphor-on-black. */
+.xp-win-body .ide {
+  --color-paper: var(--xp-paper);
+  --color-paper-2: var(--xp-chrome);
+  --color-paper-3: var(--xp-select-soft);
+  --color-rule: var(--xp-border);
+  --color-rule-2: var(--xp-border-dark);
+  --color-muted: var(--xp-muted);
+  --color-neutral: #404040;
+  --color-ink-2: #1a1a1a;
+  --color-ink: var(--xp-ink);
+  --color-accent: var(--xp-navy);
+  --color-accent-ink: #fff;
+  --color-focus: var(--xp-navy);
+  --color-error: var(--xp-err);
+  --color-error-ink: #fff;
+  --color-scrim: rgba(10, 36, 106, 0.28);
+  --font-body: Tahoma, "Segoe UI", Verdana, sans-serif;
+  --font-display: Tahoma, "Segoe UI", Verdana, sans-serif;
+  background: var(--xp-paper);
+  color: var(--xp-ink);
+  font-family: Tahoma, "Segoe UI", Verdana, sans-serif;
+  /* Inside a window the IDE is a flex child, never viewport-sized. */
+  min-height: 0;
+  height: 100%;
+}
+/* XP window chrome for the IDE frame: title / rail / tabs / status all Luna. */
+.xp-win-body .ide-title {
+  background: var(--xp-chrome);
+  border-bottom: 1px solid var(--xp-border);
+  min-height: 30px;
+}
+.xp-win-body .ide-menubar { display: flex; }
+.xp-win-body .ide-menu__btn {
+  min-height: 26px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--xp-ink);
+}
+.xp-win-body .ide-menu__btn:hover,
+.xp-win-body .ide-menu__btn[aria-expanded="true"] {
+  background: var(--xp-select);
+  color: #fff;
+}
+.xp-win-body .ide-menu__list {
+  background: #fff;
+  border: 1px solid var(--xp-border-dark);
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
+}
+.xp-win-body .ide-menu__item {
+  min-height: 26px;
+  font-size: 11px;
+  color: var(--xp-ink);
+}
+.xp-win-body .ide-menu__item:hover {
+  background: var(--xp-select);
+  color: #fff;
+}
+.xp-win-body .ide-menu__item kbd { color: inherit; opacity: 0.75; }
+.xp-win-body .ide-title__project {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--xp-ink);
+}
+.xp-win-body .ide-title__go {
+  min-height: 24px;
+  font-size: 11px;
+  color: var(--xp-ink);
+  background: linear-gradient(180deg, #fff, var(--xp-chrome));
+  border: 1px solid var(--xp-border-dark);
+  border-radius: 3px;
+}
+.xp-win-body .ide-title__go:hover { color: var(--xp-ink); background: #fff; }
+.xp-win-body .ide-rail {
+  background: var(--xp-chrome);
+  border-right: 1px solid var(--xp-border);
+}
+.xp-win-body .ide-rail__btn {
+  color: #333;
+  min-height: 34px;
+}
+.xp-win-body .ide-rail__btn:hover { background: var(--xp-select-soft); color: var(--xp-navy); }
+.xp-win-body .ide-rail__btn[aria-pressed="true"] {
+  background: #fff;
+  color: var(--xp-navy);
+  box-shadow: inset 2px 0 0 var(--xp-select);
+}
+/* Sidebar toggle reads as pressed while the panel is open. */
+.xp-win-body .ide-rail__toggle[aria-expanded="true"] {
+  background: #fff;
+  color: var(--xp-navy);
+}
+.xp-win-body .ide-side__head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+.xp-win-body .ide-side__head .ide-side__title {
+  flex: 1;
+  min-width: 0;
+}
+.xp-win-body .ide-side__collapse {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  min-height: 22px;
+  margin-right: 4px;
+  padding: 0 2px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: #555;
+  cursor: pointer;
+}
+.xp-win-body .ide-side__collapse:hover {
+  background: var(--xp-select-soft);
+  border-color: var(--xp-select);
+  color: var(--xp-navy);
+}
+.xp-win-body .ide-side__collapse:focus-visible {
+  outline: 2px solid var(--xp-navy);
+  outline-offset: 1px;
+}
+.xp-win-body .ide-side {
+  background: #fff;
+  border-right: 1px solid var(--xp-border);
+  color: var(--xp-ink);
+}
+.xp-win-body .ide-side__title,
+.xp-win-body .ide-side__label {
+  color: var(--xp-faint);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.xp-win-body .ide-side__input {
+  min-height: 24px !important;
+  font-size: 11px !important;
+  border: 1px solid var(--xp-field-border) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: var(--xp-ink) !important;
+}
+.xp-win-body .ide-stage { background: #fff; }
+.xp-win-body .ide-tabs {
+  background: var(--xp-chrome);
+  border-bottom: 1px solid var(--xp-border);
+  min-height: 26px;
+}
+.xp-win-body .ide-tab {
+  border-right: 1px solid var(--xp-border);
+  background: var(--xp-chrome-2);
+}
+.xp-win-body .ide-tab.is-on { background: #fff; }
+.xp-win-body .ide-tab__btn {
+  min-height: 26px;
+  font-size: 11px;
+  color: var(--xp-ink);
+}
+.xp-win-body .ide-tab__close { min-height: 26px; min-width: 26px; color: #555; }
+.xp-win-body .ide-tab__close:hover { background: #e81123; color: #fff; }
+.xp-win-body .ide-crumbs {
+  background: #fff;
+  border-bottom: 1px solid var(--xp-border);
+  font-size: 11px;
+}
+.xp-win-body .ide-crumbs__btn { min-height: 24px; font-size: 11px; color: var(--xp-navy); }
+.xp-win-body .ide-crumbs__sep { color: #888; }
+.xp-win-body .ide-canvas { background: #fff; }
+.xp-win-body .ide-status {
+  background: var(--xp-chrome);
+  border-top: 1px solid var(--xp-border);
+  color: #333;
+  font-size: 11px;
+  min-height: 22px;
+  padding: 2px 8px;
+}
+.xp-win-body .ide-status a { color: var(--xp-navy); }
+.xp-win-body .ide-empty { color: var(--xp-muted); font-size: 12px; }
+.xp-win-body .ide-hit { color: var(--xp-ink); min-height: 28px; font-size: 12px; }
+.xp-win-body .ide-hit .dim { color: var(--xp-muted); }
+.xp-win-body .ide-hit:hover { background: var(--xp-select-soft); color: var(--xp-ink); }
+.xp-win-body .ide-tree-chevron { min-height: 24px; color: #555; }
+.xp-win-body .ide-tree-row { align-items: center; }
+.xp-win-body .ide .tree-item.ide-tree-name {
+  min-height: 24px;
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  color: var(--xp-ink);
+}
+.xp-win-body .ide .tree-item.ide-tree-name:hover { background: var(--xp-select-soft); color: var(--xp-ink); }
+.xp-win-body .ide .tree-item.ide-tree-name[aria-current="true"] {
+  background: var(--xp-select);
+  color: #fff;
+}
+/* Editor document type inside XP: navy headings, ink body, blue links. */
+.xp-win-body .ide .doc { padding: 16px 18px 28px; }
+.xp-win-body .ide .doc h1,
+.xp-win-body .ide .letter h1,
+.xp-win-body .ide .letter-when { color: var(--xp-navy); }
+.xp-win-body .ide .doc .hello,
+.xp-win-body .ide .doc .hello__live { color: var(--xp-navy); }
+.xp-win-body .ide .doc .caret { color: var(--xp-navy); }
+.xp-win-body .ide .doc h2,
+.xp-win-body .ide .doc p,
+.xp-win-body .ide .doc .log-org,
+.xp-win-body .ide .spec dd { color: var(--xp-ink); }
+.xp-win-body .ide .doc a,
+.xp-win-body .ide .index-link,
+.xp-win-body .ide .letter .index-link { color: var(--xp-link); }
+.xp-win-body .ide .doc a:hover,
+.xp-win-body .ide .index-link:hover { color: var(--xp-navy); }
+.xp-win-body .ide .dim,
+.xp-win-body .ide .log-when,
+.xp-win-body .ide .spec dt,
+.xp-win-body .ide .letter-rule { color: var(--xp-muted); }
+.xp-win-body .ide .ide-scm__ext { color: var(--xp-link); min-height: 28px; }
+.xp-win-body .ide-cmdk {
+  background: #fff;
+  border: 1px solid var(--xp-border-dark);
+  box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.4);
+  color: var(--xp-ink);
+}
+.xp-win-body .ide-cmdk__input {
+  min-height: 26px !important;
+  font-size: 12px !important;
+  border: 1px solid var(--xp-field-border) !important;
+  border-radius: 0 !important;
+}
+.xp-win-body .ide-cmdk__row { min-height: 28px; font-size: 12px; color: var(--xp-ink); }
+.xp-win-body .ide-cmdk__row[aria-selected="true"] { background: var(--xp-select); color: #fff; }
+.xp-win-body .ide-cmdk__row[aria-selected="true"] .dim { color: #e5eefc; }
+.xp-win-body .ide-cmdk__row .dim { color: var(--xp-muted); }
+.xp-win-body .ide-cmdk__dismiss {
+  min-height: 26px;
+  border: 1px solid var(--xp-border-dark);
+  background: linear-gradient(180deg, #fff, var(--xp-chrome));
+  color: var(--xp-ink);
+  border-radius: 3px;
+}
+/* legacy generic overrides (non-IDE FileView panes) keep working */
 .xp-win-body {
   background: #fff;
   color: #111;
@@ -304,11 +571,11 @@ img[src*="terminal.png"] {
 }
 .xp-win-body a,
 .xp-win-body .index-link {
-  color: #0000cc;
+  color: var(--xp-link);
 }
 .xp-win-body a:hover,
 .xp-win-body .index-link:hover {
-  color: #ff0000;
+  color: var(--xp-navy);
 }
 .xp-win-body .dim,
 .xp-win-body .log-when,
@@ -316,7 +583,7 @@ img[src*="terminal.png"] {
 .xp-win-body .tree-label,
 .xp-win-body .letter-when,
 .xp-win-body .letter-rule {
-  color: #666;
+  color: var(--xp-muted);
 }
 .xp-win-body .wordmark,
 .xp-win-body .tab-name,
@@ -847,9 +1114,17 @@ img[src*="terminal.png"] {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 180ms ease-out;
 }
 .xp-cam__video.is-hidden {
   visibility: hidden;
+}
+.xp-cam__video.is-mirror {
+  transform: scaleX(-1);
+}
+.xp-cam:focus,
+.xp-paint:focus {
+  outline: none;
 }
 .xp-cam__off {
   position: absolute;
@@ -970,16 +1245,22 @@ img[src*="terminal.png"] {
   flex: 1;
   min-height: 0;
 }
+.xp-paint__side {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-height: 0;
+  background: #ece9d8;
+  border-right: 1px solid #aca899;
+  overflow-y: auto;
+}
 .xp-paint__tools {
   display: grid;
   grid-template-columns: repeat(2, 30px);
   grid-auto-rows: 30px;
   gap: 3px;
   align-content: start;
-  flex-shrink: 0;
   padding: 5px 4px;
-  background: #ece9d8;
-  border-right: 1px solid #aca899;
   overflow-y: auto;
 }
 .xp-paint__tool {
@@ -1004,6 +1285,39 @@ img[src*="terminal.png"] {
   outline: 2px solid #0a246a;
   outline-offset: 1px;
 }
+/* brush-size option box below the toolbox, like real Paint */
+.xp-paint__options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  padding: 6px 4px;
+  border-top: 1px solid #aca899;
+  overflow-y: auto;
+}
+.xp-paint__size {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  background: linear-gradient(180deg, #fff, #e3e0cf);
+  border: 1px solid #716f64;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0;
+}
+.xp-paint__size span {
+  display: block;
+  border-radius: 50%;
+  background: #111;
+  pointer-events: none;
+}
+.xp-paint__size.is-active {
+  background: linear-gradient(180deg, #cde0ff, #a8c8f8);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35);
+  outline: 1px dotted #0a246a;
+  outline-offset: -3px;
+}
 /* the canvas: live feed fills it edge-to-edge, like an image in Paint */
 .xp-paint__canvaswrap {
   position: relative;
@@ -1018,9 +1332,27 @@ img[src*="terminal.png"] {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 180ms ease-out;
 }
 .xp-paint__video.is-zoom {
   transform: scale(1.8);
+}
+.xp-paint__video.is-mirror {
+  transform: scaleX(-1);
+}
+.xp-paint__video.is-zoom.is-mirror {
+  transform: scale(1.8) scaleX(-1);
+}
+/* transparent drawing layer over the feed */
+.xp-paint__draw {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.xp-paint__draw.is-live {
+  cursor: crosshair;
 }
 .xp-paint__caption {
   position: absolute;
@@ -1083,6 +1415,7 @@ img[src*="terminal.png"] {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  flex-wrap: wrap;
   padding: 5px 8px;
   background: #ece9d8;
   border-top: 1px solid #aca899;
@@ -1150,6 +1483,16 @@ img[src*="terminal.png"] {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* discreet mirror affordance: reads as plain status text */
+.xp-paint__dims {
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  font-size: 11px;
+  font-family: inherit;
+  color: inherit;
   white-space: nowrap;
 }
 .xp-paint__modebtn {
@@ -1501,6 +1844,241 @@ img[src*="terminal.png"] {
   outline-offset: -2px;
 }
 
+/* ---- Explorer (My Computer): flex row that collapses in narrow windows ---- */
+.xp-explorer {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+  color: var(--xp-ink);
+}
+.xp-explorer__tree {
+  width: 180px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--xp-border);
+  overflow: auto;
+  min-height: 0;
+  background: #fff;
+}
+.xp-explorer__main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 14px;
+}
+.xp-explorer__path {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--xp-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Camera contrast pass: viewfinder chrome stays dark, text must pass ---- */
+.xp-cam__nosignal { color: #c8c8c8; }
+.xp-cam__note { color: #b5b5b5; }
+.xp-cam__toolbar .cmd:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+/* Camera preview scales: keep 4:3-ish minimum so controls never crush it,
+ * filmstrip scrolls instead of squeezing the finder. */
+.xp-cam__finder { min-height: 180px; }
+.xp-cam__toolbar { flex-wrap: wrap; row-gap: 6px; }
+.xp-cam__toolbar .cmd { min-height: 28px; white-space: nowrap; }
+
+/* ---- Paint: palette must wrap, never clip ---- */
+.xp-paint__swatches {
+  grid-template-columns: repeat(14, minmax(14px, 17px));
+}
+.xp-paint__swatch { min-width: 0; min-height: 15px; }
+.xp-paint__swatch:focus-visible {
+  outline: 2px solid var(--xp-navy);
+  outline-offset: 1px;
+}
+
+/* ---- IDE inside XP: never position:fixed (breaks windowed mode).
+ * The standalone IDE docks the side panel with fixed positioning on small
+ * viewports; inside a draggable window that escapes the window bounds.
+ * Narrow windows stack the panel over the *stage* grid cell (exact alignment,
+ * no guessed pixel offsets); wide windows dock it as a real grid column. */
+.xp-win-body .ide { position: relative; overflow: hidden; }
+.xp-win-body .ide--side-off .ide-side,
+.xp-win-body .ide--side-off .ide-scrim { display: none; }
+
+/* ---- Window-size responsiveness (container queries on .xp-win-body) ----
+ * These react to the *window* width, so windowed and maximized/fullscreen
+ * each get a fitting layout without magic viewport numbers. */
+
+/* Narrow XP window (~≤460px): Explorer stacks, Paint toolbox goes on top. */
+@container xpwin (max-width: 28.75rem) {
+  .xp-explorer { flex-direction: column; }
+  .xp-explorer__tree {
+    width: 100%;
+    max-height: 38%;
+    border-right: 0;
+    border-bottom: 1px solid var(--xp-border);
+  }
+  .xp-explorer__main { padding: 10px 12px; }
+
+  .xp-paint__main { flex-direction: column; }
+  .xp-paint__side {
+    flex-direction: row;
+    align-items: stretch;
+    border-right: 0;
+    border-bottom: 1px solid var(--xp-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .xp-paint__tools {
+    grid-template-columns: repeat(6, 28px);
+    grid-auto-rows: 28px;
+    padding: 4px;
+  }
+  .xp-paint__options {
+    flex-direction: row;
+    align-items: center;
+    border-top: 0;
+    border-left: 1px solid var(--xp-border);
+    padding: 4px 6px;
+  }
+  .xp-paint__size { width: 28px; height: 28px; }
+  .xp-paint__canvaswrap { min-height: 200px; }
+  .xp-paint__swatches {
+    grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));
+    flex: 1;
+    min-width: min(100%, 12rem);
+  }
+  .xp-paint__colors { gap: 8px; }
+  .xp-paint__capture { margin-left: 0; width: 100%; }
+  .xp-paint__capture .cmd { flex: 1; }
+  .xp-paint__hint { display: none; }
+
+  .xp-cam__finder { min-height: 200px; }
+  .xp-cam__count { flex-basis: 100%; text-align: left; order: 3; }
+  .xp-cam__strip { max-height: 104px; }
+  .xp-cam__shot { width: 88px; }
+  .xp-cam__shot img { height: 50px; }
+
+  .xp-logview__bar { flex-wrap: wrap; }
+  .xp-logview__filter { flex: 1; min-width: 8rem; width: auto; }
+  .xp-ie__doc { padding: 12px 14px 24px; }
+  .xp-win-body .ide-title__project { display: none; }
+  .xp-win-body .ide-status p:nth-child(2) {
+    flex-basis: 100%;
+    order: 3;
+  }
+}
+
+/* Medium XP window (~≤640px): tighter palette + sidebar overlay. */
+@container xpwin (max-width: 40rem) {
+  .xp-paint__swatches {
+    grid-template-columns: repeat(auto-fill, minmax(16px, 1fr));
+  }
+  .xp-paint__page,
+  .xp-wordpad__page { padding: 16px 16px 28px; }
+}
+
+/* Window narrower than the "wide" breakpoint: force the compact IDE frame
+ * even when the *viewport* is wide (viewport media queries can't know the
+ * window is windowed). The activity rail is dropped entirely here — a
+ * five-icon bottom bar earns no space in a small window. Panel switching
+ * stays available via View menu and ⌘K; show/hide via the panel « button,
+ * View menu, and ⌘B. */
+@container xpwin (max-width: 53.74rem) {
+  .xp-win-body .ide {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title"
+      "stage"
+      "status";
+  }
+  .xp-win-body .ide-rail { display: none; }
+  .xp-win-body .ide-stage { grid-area: stage; min-height: 0; min-width: 0; }
+  /* Overlay: side + scrim share the stage cell, so the panel always lines up
+   * with the content area exactly — never floating over title/status/rail. */
+  .xp-win-body .ide-side {
+    grid-area: stage;
+    justify-self: start;
+    align-self: stretch;
+    /* relative: stays in grid flow (kills the standalone fixed skid)
+     * while letting z-index lift it above the stage cell. */
+    position: relative;
+    z-index: 40;
+    display: flex;
+    width: min(15rem, 78%);
+    min-height: 0;
+    background: #fff;
+    border: 0;
+    border-right: 1px solid var(--xp-border-dark);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  }
+  .xp-win-body .ide-scrim {
+    grid-area: stage;
+    position: relative;
+    display: block;
+    width: auto;
+    height: auto;
+    z-index: 39;
+    border: 0;
+    background: var(--color-scrim);
+    cursor: pointer;
+  }
+}
+
+/* Wide XP window (~≥860px): classic three-column IDE + full toolbox. */
+@container xpwin (min-width: 53.75rem) {
+  .xp-win-body .ide {
+    grid-template-columns: 48px 15rem minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title title title"
+      "rail side stage"
+      "status status status";
+  }
+  /* Sidebar closed (⌘B): drop the side track entirely — no empty gap. */
+  .xp-win-body .ide.ide--side-off {
+    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-areas:
+      "title title"
+      "rail stage"
+      "status status";
+  }
+  .xp-win-body .ide-menubar { display: flex; }
+  .xp-win-body .ide-rail {
+    grid-area: rail;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-right: 1px solid var(--xp-border);
+    border-top: 0;
+    padding-top: 4px;
+  }
+  /* Column-docked rail: toggle pins to the bottom under a divider. */
+  .xp-win-body .ide-rail__toggle {
+    margin-top: auto;
+    border-left: 0;
+    border-top: 1px solid var(--xp-border);
+  }
+  .xp-win-body .ide-side {
+    display: flex;
+    grid-area: side;
+    width: auto;
+    border: 0;
+    border-right: 1px solid var(--xp-border);
+    box-shadow: none;
+    justify-self: stretch;
+    z-index: auto;
+  }
+  .xp-win-body .ide--side-off .ide-side { display: none; }
+  .xp-win-body .ide-scrim { display: none !important; }
+  .xp-win-body .ide-stage { grid-area: stage; }
+  .xp-win-body .ide-status { grid-area: status; }
+  .xp-win-body .ide-title { grid-area: title; }
+}
+
 @media (max-width: 640px) {
   .xp-icons {
     max-width: 190px;
@@ -1521,5 +2099,9 @@ img[src*="terminal.png"] {
   }
   .xp-mode-swap {
     animation: none;
+  }
+  .xp-cam__video,
+  .xp-paint__video {
+    transition: none;
   }
 }

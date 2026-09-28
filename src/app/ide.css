@@ -199,6 +199,44 @@ html[data-theme="ide"] {
   background: var(--color-paper-3);
 }
 
+/* Explicit sidebar show/hide toggle: separated from the panel buttons so
+ * it reads as layout chrome, not another panel. Divider side follows the
+ * rail direction (vertical bar = left divider, horizontal bar = top). */
+.ide-rail__toggle {
+  border-left: var(--rule-hair) solid var(--color-rule);
+}
+
+.ide-side__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+
+.ide-side__head .ide-side__title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Collapse affordance in the panel header — mirrors the rail toggle. */
+.ide-side__collapse {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin-right: var(--space-2xs);
+  padding: 0;
+  background: transparent;
+  border: var(--rule-fine) solid transparent;
+  border-radius: var(--radius-input);
+  color: var(--color-muted);
+  font-family: var(--font-body);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .ide-side {
   display: none;
   flex-direction: column;
@@ -659,6 +697,8 @@ html[data-theme="ide"] {
   .ide-tab__btn.is-hover,
   .ide-tab__close:hover,
   .ide-tab__close.is-hover,
+  .ide-side__collapse:hover,
+  .ide-side__collapse.is-hover,
   .ide-crumbs__btn:hover,
   .ide-crumbs__btn.is-hover,
   .ide-tree-chevron:hover,
@@ -707,6 +747,8 @@ html[data-theme="ide"] {
 .ide-tab__btn.is-focus,
 .ide-tab__close:focus-visible,
 .ide-tab__close.is-focus,
+.ide-side__collapse:focus-visible,
+.ide-side__collapse.is-focus,
 .ide-crumbs__btn:focus-visible,
 .ide-crumbs__btn.is-focus,
 .ide-tree-chevron:focus-visible,
@@ -845,6 +887,12 @@ html[data-theme="ide"] {
     min-height: 2.75rem;
   }
 
+  .ide-rail__toggle {
+    margin-top: auto;
+    border-left: 0;
+    border-top: var(--rule-fine) solid var(--color-rule);
+  }
+
   .ide-side,
   .ide.ide--side-off .ide-side {
     display: flex;
@@ -914,8 +962,13 @@ html[data-theme="ide"] {
   .ide-tab__btn,
   .ide-crumbs__btn,
   .ide-menu__btn,
-  .ide-menu__item {
+  .ide-menu__item,
+  .ide-side__collapse {
     min-height: 1.75rem;
+  }
+
+  .ide-side__collapse {
+    min-width: 1.75rem;
   }
 
   .ide-tab__close {

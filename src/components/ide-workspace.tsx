@@ -10,9 +10,12 @@ import {
   type ReactNode,
 } from "react";
 import {
-  Files,
+  ChevronsLeft,
+  Folder,
   GitBranch,
   ListTree,
+  PanelLeftClose,
+  PanelLeftOpen,
   Search,
   X,
 } from "lucide-react";
@@ -46,8 +49,8 @@ type PaletteRow = {
   run: () => void;
 };
 
-const PANEL_ICONS: Record<IdePanel, typeof Files> = {
-  files: Files,
+const PANEL_ICONS: Record<IdePanel, typeof Folder> = {
+  files: Folder,
   search: Search,
   git: GitBranch,
   outline: ListTree,
@@ -155,17 +158,16 @@ export function IdeWorkspace({
     [openPath],
   );
 
+  /* Rail buttons are single-purpose: they show/switch panels, never hide.
+   * Hiding lives only in the rail toggle, the panel collapse button, the
+   * View menu, and ⌘B — so no two controls ever duplicate the same job. */
   const pickPanel = useCallback((id: IdePanel) => {
-    if (id === panel) {
-      setSidebarOpen((open) => !open);
-    } else {
-      setPanel(id);
-      setSidebarOpen(true);
-    }
+    setPanel(id);
+    setSidebarOpen(true);
     if (id === "search") {
       window.setTimeout(() => searchRef.current?.focus(), 0);
     }
-  }, [panel]);
+  }, []);
 
   const closePalette = useCallback(() => {
     setPaletteOpen(false);
@@ -497,6 +499,7 @@ export function IdeWorkspace({
               type="button"
               className="ide-rail__btn"
               aria-label={panelTitle(id)}
+              title={panelTitle(id)}
               aria-pressed={on}
               aria-controls="ide-side"
               onClick={() => pickPanel(id)}
@@ -505,11 +508,37 @@ export function IdeWorkspace({
             </button>
           );
         })}
+        <button
+          type="button"
+          className="ide-rail__btn ide-rail__toggle"
+          aria-label={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+          title={sidebarOpen ? "Hide sidebar (⌘B)" : "Show sidebar (⌘B)"}
+          aria-expanded={sidebarOpen}
+          aria-controls="ide-side"
+          onClick={() => setSidebarOpen((open) => !open)}
+        >
+          {sidebarOpen ? (
+            <PanelLeftClose size={18} strokeWidth={1.6} aria-hidden="true" />
+          ) : (
+            <PanelLeftOpen size={18} strokeWidth={1.6} aria-hidden="true" />
+          )}
+        </button>
       </nav>
 
       {sidebarOpen ? (
         <aside id="ide-side" className="ide-side" aria-label={panelTitle(panel)}>
-          <p className="ide-side__title">{panelTitle(panel)}</p>
+          <div className="ide-side__head">
+            <p className="ide-side__title">{panelTitle(panel)}</p>
+            <button
+              type="button"
+              className="ide-side__collapse"
+              aria-label="Hide sidebar"
+              title="Hide sidebar (⌘B)"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <ChevronsLeft size={14} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+          </div>
           {panel === "files" ? (
             <ScrollArea className="tree-scroll">
               <FileTree openPath={openPath} onOpen={openFile} skin="ide" />
