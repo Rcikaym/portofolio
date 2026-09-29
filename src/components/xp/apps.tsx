@@ -1,6 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent as PaintPointerEvent } from "react";
+import {
+  Eraser,
+  Ellipse,
+  Minus,
+  PaintBucket,
+  Paintbrush,
+  Pencil,
+  Pipette,
+  SprayCan,
+  Square,
+  Squircle,
+  Type,
+  ZoomIn,
+  type LucideIcon,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileTree } from "@/components/file-tree";
 import { FileView } from "@/components/file-view";
@@ -382,21 +397,21 @@ export function TerminalApp({ onOpenFile }: { onOpenFile: (path: string) => void
 
 type FacingMode = "user" | "environment";
 
-type PaintTool = { id: string; label: string; hint: string; glyph: string };
+type PaintTool = { id: string; label: string; hint: string; Icon: LucideIcon };
 
 const PAINT_TOOLS: PaintTool[] = [
-  { id: "pencil", label: "Pencil", hint: "Draws a free-form line one pixel wide.", glyph: "✎" },
-  { id: "brush", label: "Brush", hint: "Draws with a brush.", glyph: "✒" },
-  { id: "airbrush", label: "Airbrush", hint: "Draws with an airbrush.", glyph: "⁂" },
-  { id: "eraser", label: "Eraser", hint: "Erases back to the live picture.", glyph: "▅" },
-  { id: "fill", label: "Fill With Color", hint: "Fills an enclosed area with color.", glyph: "◩" },
-  { id: "picker", label: "Pick Color", hint: "Picks a color from the live picture.", glyph: "◈" },
-  { id: "magnifier", label: "Magnifier", hint: "Zooms the live picture in and out.", glyph: "⌕" },
-  { id: "text", label: "Text", hint: "Adds a caption, burned into captures.", glyph: "A" },
-  { id: "line", label: "Line", hint: "Draws a straight line.", glyph: "╲" },
-  { id: "rect", label: "Rectangle", hint: "Draws a rectangle.", glyph: "▭" },
-  { id: "ellipse", label: "Ellipse", hint: "Draws an ellipse.", glyph: "⬯" },
-  { id: "roundrect", label: "Rounded Rectangle", hint: "Draws a rounded rectangle.", glyph: "▨" },
+  { id: "pencil", label: "Pencil", hint: "Draws a free-form line one pixel wide.", Icon: Pencil },
+  { id: "brush", label: "Brush", hint: "Draws with a brush.", Icon: Paintbrush },
+  { id: "airbrush", label: "Airbrush", hint: "Draws with an airbrush.", Icon: SprayCan },
+  { id: "eraser", label: "Eraser", hint: "Erases back to the live picture.", Icon: Eraser },
+  { id: "fill", label: "Fill With Color", hint: "Fills an enclosed area with color.", Icon: PaintBucket },
+  { id: "picker", label: "Pick Color", hint: "Picks a color from the live picture.", Icon: Pipette },
+  { id: "magnifier", label: "Magnifier", hint: "Zooms the live picture in and out.", Icon: ZoomIn },
+  { id: "text", label: "Text", hint: "Adds a caption, burned into captures.", Icon: Type },
+  { id: "line", label: "Line", hint: "Draws a straight line.", Icon: Minus },
+  { id: "rect", label: "Rectangle", hint: "Draws a rectangle.", Icon: Square },
+  { id: "ellipse", label: "Ellipse", hint: "Draws an ellipse.", Icon: Ellipse },
+  { id: "roundrect", label: "Rounded Rectangle", hint: "Draws a rounded rectangle.", Icon: Squircle },
 ];
 
 const PAINT_COLORS = [
@@ -421,6 +436,11 @@ export function CameraApp() {
   const [fg, setFg] = useState("#000000");
   const [bg, setBg] = useState("#FFFFFF");
   const [caption, setCaption] = useState("");
+  const [fontFamily, setFontFamily] = useState("Arial");
+  const [fontSize, setFontSize] = useState(18);
+  const [fontBold, setFontBold] = useState(false);
+  const [fontItalic, setFontItalic] = useState(false);
+  const [cursor, setCursor] = useState<string | null>(null);
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
   const [mirrored, setMirrored] = useState(true);
   const [brushSize, setBrushSize] = useState(7);
@@ -507,8 +527,8 @@ export function CameraApp() {
     }
     const text = caption.trim();
     if (text) {
-      const fs = Math.max(16, Math.round(c.height * 0.055));
-      ctx.font = `${fs}px Tahoma, sans-serif`;
+      const fs = Math.max(8, fontSize);
+      ctx.font = `${fontItalic ? "italic " : ""}${fontBold ? "bold " : ""}${fs}px ${fontFamily}, sans-serif`;
       const pad = Math.round(fs * 0.6);
       const tw = ctx.measureText(text).width;
       const barH = fs + pad * 2;
@@ -519,7 +539,7 @@ export function CameraApp() {
       ctx.fillText(text, pad, c.height - barH + pad);
     }
     setShots((prev) => [c.toDataURL("image/png"), ...prev].slice(0, 12));
-  }, [caption, fg, mirrored]);
+  }, [caption, fg, fontBold, fontFamily, fontItalic, fontSize, mirrored]);
 
   const switchCamera = useCallback(() => {
     const next: FacingMode = facing === "user" ? "environment" : "user";
@@ -948,12 +968,12 @@ export function CameraApp() {
                   key={t.id}
                   type="button"
                   className={tool === t.id ? "xp-paint__tool is-active" : "xp-paint__tool"}
-                  title={t.label}
+                  title={`${t.label} — ${t.hint}`}
                   aria-label={t.label}
                   aria-pressed={tool === t.id}
                   onClick={() => setTool(t.id)}
                 >
-                  {t.glyph}
+                  <t.Icon size={15} strokeWidth={2} aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -991,12 +1011,78 @@ export function CameraApp() {
               role="img"
               aria-label={`Drawing layer. ${activeTool.label} selected. Drag to draw.`}
               onPointerDown={onDrawDown}
-              onPointerMove={onDrawMove}
+              onPointerMove={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                setCursor(`${Math.round(e.clientX - r.left)},${Math.round(e.clientY - r.top)}`);
+                onDrawMove(e);
+              }}
+              onPointerLeave={() => setCursor(null)}
               onPointerUp={endStroke}
               onPointerCancel={endStroke}
             />
+            {tool === "text" ? (
+              <div className="xp-paint__fonts" role="toolbar" aria-label="Fonts">
+                <p className="xp-paint__fonts-title">
+                  <span>Fonts</span>
+                  <button type="button" aria-label="Close fonts toolbar" onClick={() => setTool("pencil")}>
+                    ✕
+                  </button>
+                </p>
+                <div className="xp-paint__fonts-row">
+                  <label className="sr-only" htmlFor="xp-paint-font">Font</label>
+                  <select
+                    id="xp-paint-font"
+                    value={fontFamily}
+                    onChange={(e) => setFontFamily(e.target.value)}
+                  >
+                    {["Arial", "Tahoma", "Times New Roman", "Courier New"].map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                  <label className="sr-only" htmlFor="xp-paint-fontsize">Font size</label>
+                  <select
+                    id="xp-paint-fontsize"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(Number(e.target.value))}
+                  >
+                    {[8, 10, 12, 14, 18, 24, 36, 48, 72].map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className={fontBold ? "is-on" : ""}
+                    aria-pressed={fontBold}
+                    aria-label="Bold"
+                    title="Bold"
+                    onClick={() => setFontBold((v) => !v)}
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    className={fontItalic ? "is-on" : ""}
+                    aria-pressed={fontItalic}
+                    aria-label="Italic"
+                    title="Italic"
+                    onClick={() => setFontItalic((v) => !v)}
+                  >
+                    I
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {live && tool === "text" && caption.trim() ? (
-              <p className="xp-paint__caption" style={{ color: fg }}>
+              <p
+                className="xp-paint__caption"
+                style={{
+                  color: fg,
+                  fontFamily: `${fontFamily}, sans-serif`,
+                  fontSize: Math.max(12, Math.min(28, fontSize)),
+                  fontWeight: fontBold ? 700 : 400,
+                  fontStyle: fontItalic ? "italic" : "normal",
+                }}
+              >
                 {caption.trim()}
               </p>
             ) : null}
@@ -1055,13 +1141,17 @@ export function CameraApp() {
         {strip(true)}
           <div className="xp-paint__status">
           <span className="xp-paint__hint">{activeTool.hint}</span>
+          <span className="xp-paint__coords" aria-live="polite">
+            {cursor ?? (dims ? `${dims.w}×${dims.h}` : "—")}
+          </span>
           <button
             type="button"
             className="xp-paint__dims"
             onClick={toggleMirror}
             title={mirrored ? "Mirror is on — click for true view" : "Mirror is off — click for selfie view"}
+            aria-label="Toggle mirror"
           >
-            {dims ? `${dims.w}×${dims.h}` : "—"}
+            ⇋
           </button>
           <button type="button" className="xp-paint__modebtn" onClick={goCamera}>
             Camera mode

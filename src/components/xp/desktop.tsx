@@ -305,7 +305,6 @@ export function XpDesktop({ initial = "welcome" }: { initial?: XpInitial }) {
                   <span>Edit</span>
                   <span>View</span>
                   <span>Image</span>
-                  <span>Colors</span>
                   <span>Help</span>
                 </>
               ) : w.app === "explorer" ? (

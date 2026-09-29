@@ -1096,8 +1096,9 @@ img[src*="terminal.png"] {
 .xp-cam {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   min-height: 0;
+  height: 100%;
   background: #111;
   color: #eee;
 }
@@ -1234,8 +1235,9 @@ img[src*="terminal.png"] {
 .xp-paint {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   min-height: 0;
+  height: 100%;
   background: #ece9d8;
   color: #111;
   font-family: Tahoma, sans-serif;
@@ -1243,12 +1245,13 @@ img[src*="terminal.png"] {
 .xp-paint__main {
   display: flex;
   flex: 1;
-  min-height: 0;
+  min-height: 220px;
 }
 .xp-paint__side {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  width: 76px;
   min-height: 0;
   background: #ece9d8;
   border-right: 1px solid #aca899;
@@ -1267,13 +1270,15 @@ img[src*="terminal.png"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
   color: #111;
   background: linear-gradient(180deg, #fff, #e3e0cf);
   border: 1px solid #716f64;
   border-radius: 2px;
   cursor: pointer;
   padding: 0;
+}
+.xp-paint__tool svg {
+  pointer-events: none;
 }
 .xp-paint__tool.is-active {
   background: linear-gradient(180deg, #cde0ff, #a8c8f8);
@@ -1323,7 +1328,8 @@ img[src*="terminal.png"] {
   position: relative;
   flex: 1;
   min-width: 0;
-  background: #000;
+  min-height: 220px;
+  background: #fff;
   overflow: hidden;
 }
 .xp-paint__video {
@@ -1343,13 +1349,87 @@ img[src*="terminal.png"] {
 .xp-paint__video.is-zoom.is-mirror {
   transform: scale(1.8) scaleX(-1);
 }
-/* transparent drawing layer over the feed */
+/* Paint canvas stays a white document (like MS Paint) when the camera
+ * is off; the notice sits on the white page instead of a dark overlay. */
+.xp-paint__canvaswrap .xp-cam__off {
+  background: #fff;
+}
+.xp-paint__canvaswrap .xp-cam__nosignal {
+  color: #808080;
+}
+.xp-paint__canvaswrap .xp-cam__note {
+  color: #666;
+}
 .xp-paint__draw {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+/* floating Fonts toolbar (MS Paint text-tool style) */
+.xp-paint__fonts {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 300px;
+  max-width: calc(100% - 16px);
+  background: #ece9d8;
+  border: 1px solid #716f64;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
+  font-size: 11px;
+  z-index: 3;
+}
+.xp-paint__fonts-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: 2px 4px 2px 8px;
+  background: linear-gradient(180deg, #3d8bff, #245edb);
+  color: #fff;
+  font-weight: 700;
+}
+.xp-paint__fonts-title button {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f3a08a, #d64f1e);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 5px;
+  cursor: pointer;
+}
+.xp-paint__fonts-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+.xp-paint__fonts-row select {
+  min-width: 0;
+  height: 24px;
+  font-size: 11px;
+  border: 1px solid #7f9db9;
+  background: #fff;
+  color: #111;
+}
+.xp-paint__fonts-row select:first-of-type {
+  flex: 1;
+}
+.xp-paint__fonts-row button {
+  min-width: 26px;
+  height: 24px;
+  font-size: 12px;
+  background: linear-gradient(180deg, #fff, #e3e0cf);
+  border: 1px solid #716f64;
+  border-radius: 2px;
+  cursor: pointer;
+  color: #111;
+}
+.xp-paint__fonts-row button.is-on {
+  background: linear-gradient(180deg, #cde0ff, #a8c8f8);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35);
 }
 .xp-paint__draw.is-live {
   cursor: crosshair;
@@ -1446,6 +1526,11 @@ img[src*="terminal.png"] {
   grid-template-columns: repeat(14, 17px);
   grid-template-rows: repeat(2, 15px);
   gap: 2px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 .xp-paint__swatch {
   border: 1px solid #808080;
@@ -1485,15 +1570,27 @@ img[src*="terminal.png"] {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* discreet mirror affordance: reads as plain status text */
+/* cursor readout mirrors the classic "307,70" status cell */
+.xp-paint__coords {
+  flex-shrink: 0;
+  min-width: 76px;
+  padding: 2px 6px;
+  text-align: center;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px inset #aca899;
+}
+/* discreet mirror toggle next to the readout */
 .xp-paint__dims {
-  border: 0;
-  background: transparent;
-  padding: 2px 4px;
+  border: 1px solid #716f64;
+  background: linear-gradient(180deg, #fff, #e3e0cf);
+  border-radius: 2px;
+  padding: 2px 6px;
   font-size: 11px;
   font-family: inherit;
-  color: inherit;
+  color: #111;
   white-space: nowrap;
+  cursor: pointer;
 }
 .xp-paint__modebtn {
   min-height: 24px;
@@ -1889,7 +1986,8 @@ img[src*="terminal.png"] {
 .xp-cam__toolbar { flex-wrap: wrap; row-gap: 6px; }
 .xp-cam__toolbar .cmd { min-height: 28px; white-space: nowrap; }
 
-/* ---- Paint: palette must wrap, never clip ---- */
+/* ---- Paint: palette stays a classic fixed 2-row grid, scrolls instead
+ * of collapsing to a single column in narrow windows ---- */
 .xp-paint__swatches {
   grid-template-columns: repeat(14, minmax(14px, 17px));
 }
@@ -1927,6 +2025,7 @@ img[src*="terminal.png"] {
   .xp-paint__side {
     flex-direction: row;
     align-items: stretch;
+    width: auto;
     border-right: 0;
     border-bottom: 1px solid var(--xp-border);
     overflow-x: auto;
@@ -1947,9 +2046,10 @@ img[src*="terminal.png"] {
   .xp-paint__size { width: 28px; height: 28px; }
   .xp-paint__canvaswrap { min-height: 200px; }
   .xp-paint__swatches {
-    grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));
-    flex: 1;
-    min-width: min(100%, 12rem);
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
   }
   .xp-paint__colors { gap: 8px; }
   .xp-paint__capture { margin-left: 0; width: 100%; }
@@ -1972,10 +2072,13 @@ img[src*="terminal.png"] {
   }
 }
 
-/* Medium XP window (~≤640px): tighter palette + sidebar overlay. */
+/* Medium XP window (~≤640px): tighter palette + sidebar overlay.
+ * The palette keeps its fixed 14×2 shape and scrolls instead of
+ * collapsing via auto-fill. */
 @container xpwin (max-width: 40rem) {
   .xp-paint__swatches {
-    grid-template-columns: repeat(auto-fill, minmax(16px, 1fr));
+    max-width: 100%;
+    overflow-x: auto;
   }
   .xp-paint__page,
   .xp-wordpad__page { padding: 16px 16px 28px; }
