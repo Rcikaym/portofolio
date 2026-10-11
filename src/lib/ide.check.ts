@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { HOME, profile, projects } from "./content";
+import { HOME, profile, projects, workProjects } from "./content";
 import {
   crumbs,
   excerptAround,
@@ -26,6 +26,11 @@ assert.deepEqual(
 
 const hits = searchWorkspace("NimeList");
 assert.ok(hits.some((h) => h.path.endsWith("nimelist.md")));
+assert.ok(searchWorkspace("jira-wanna-be").some((h) => h.path.endsWith("jira-wanna-be.md")));
+assert.ok(searchWorkspace("zavora").some((h) => h.path.endsWith("work/zavora.md")));
+assert.ok(searchWorkspace("snap7").some((h) => h.path.endsWith("work/plc-mes.md")));
+assert.equal(workProjects.length, 2);
+assert.ok(workProjects.every((row) => !row.repo));
 assert.ok(searchWorkspace("").length === 0);
 assert.ok(excerptAround("hello world from fadlan", "world").includes("world"));
 

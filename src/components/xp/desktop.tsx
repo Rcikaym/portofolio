@@ -368,10 +368,10 @@ export function XpDesktop({ initial = "welcome" }: { initial?: XpInitial }) {
               <ExplorerApp path={w.path ?? HOME} onOpenFile={openFile} />
             ) : null}
             {w.app === "notepad" && docKind === "wordpad" ? (
-              <WordPadApp path={w.path ?? defaultOpen()} />
+              <WordPadApp path={w.path ?? defaultOpen()} onOpenFile={openFile} />
             ) : null}
             {w.app === "notepad" && docKind === "logview" ? (
-              <LogViewApp path={w.path ?? defaultOpen()} />
+              <LogViewApp path={w.path ?? defaultOpen()} onOpenFile={openFile} />
             ) : null}
             {w.app === "notepad" && docKind === "shell" ? <ContactApp /> : null}
             {w.app === "iexplore" ? <IExploreApp onOpenFile={openFile} /> : null}

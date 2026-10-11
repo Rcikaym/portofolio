@@ -19,7 +19,16 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileTree } from "@/components/file-tree";
 import { FileView } from "@/components/file-view";
-import { HOME, profile, projects } from "@/lib/content";
+import {
+  HOME,
+  isWorkProject,
+  profile,
+  projectBySlug,
+  projectPath,
+  projectRepoLinks,
+  projects,
+  workProjects,
+} from "@/lib/content";
 import {
   complete,
   parseCommand,
@@ -44,7 +53,36 @@ export function useCopyEmail() {
 }
 
 /* ---------- WordPad: rich document viewer (reuses FileView) ---------- */
-export function WordPadApp({ path }: { path: string }) {
+function openResolved(raw: string, cwd: string, onOpenFile: (path: string) => void) {
+  const res = parseCommand(
+    raw.startsWith("cat ") || raw.startsWith("cd ") || raw.startsWith("open ")
+      ? raw
+      : `open ${raw}`,
+    { cwd },
+  );
+  for (const a of res.actions as ShellAction[]) {
+    if (a.type === "open" || a.type === "cwd") {
+      onOpenFile(a.path);
+      return;
+    }
+    if (a.type === "href" && typeof window !== "undefined") {
+      window.open(a.url, "_blank", "noopener,noreferrer");
+    }
+  }
+}
+
+export function WordPadApp({
+  path,
+  onOpenFile,
+}: {
+  path: string;
+  onOpenFile: (path: string) => void;
+}) {
+  const cwd = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : HOME;
+  const open = useCallback(
+    (raw: string) => openResolved(raw, cwd, onOpenFile),
+    [cwd, onOpenFile],
+  );
   return (
     <div className="xp-wordpad">
       <div className="xp-wordpad__ruler" aria-hidden="true" />
@@ -53,7 +91,7 @@ export function WordPadApp({ path }: { path: string }) {
           <FileView
             path={path}
             skin="ide"
-            onOpen={() => {}}
+            onOpen={open}
             onCopyEmail={() => {}}
             copied={false}
           />
@@ -64,13 +102,24 @@ export function WordPadApp({ path }: { path: string }) {
 }
 
 /* ---------- Log Viewer: monospace log skin + working filter ---------- */
-export function LogViewApp({ path }: { path: string }) {
+export function LogViewApp({
+  path,
+  onOpenFile,
+}: {
+  path: string;
+  onOpenFile: (path: string) => void;
+}) {
   const [query, setQuery] = useState("");
   const [match, setMatch] = useState<{ shown: number; total: number }>({
     shown: 0,
     total: 0,
   });
   const bodyRef = useRef<HTMLDivElement>(null);
+  const cwd = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : HOME;
+  const open = useCallback(
+    (raw: string) => openResolved(raw, cwd, onOpenFile),
+    [cwd, onOpenFile],
+  );
 
   useEffect(() => {
     const root = bodyRef.current;
@@ -113,7 +162,7 @@ export function LogViewApp({ path }: { path: string }) {
           <FileView
             path={path}
             skin="ide"
-            onOpen={() => {}}
+            onOpen={open}
             onCopyEmail={() => {}}
             copied={false}
           />
@@ -1203,6 +1252,7 @@ export function CameraApp() {
  * "page cannot be displayed" treatment. */
 
 const IE_HOME = "http://fadlan.portfolio/projects";
+const IE_WORK = "http://fadlan.portfolio/work";
 
 type IePage =
   | { url: string; kind: "home" }
@@ -1219,12 +1269,13 @@ function ieResolve(raw: string): { page: IePage; external?: string } {
     .replace(/^https?:\/\//, "")
     .replace(/^fadlan\.portfolio\/?/, "")
     .replace(/^\/+/, "");
-  if (m === "" || m === "projects" || m === "projects/") {
+  if (m === "" || m === "projects" || m === "projects/" || m === "work" || m === "work/") {
     return { page: { url: IE_HOME, kind: "home" } };
   }
-  const pm = m.match(/^projects\/([\w-]+)\/?$/);
-  if (pm && projects.some((p) => p.slug === pm[1])) {
-    return { page: { url: `${IE_HOME}/${pm[1]}`, kind: "project", slug: pm[1] } };
+  const pm = m.match(/^(projects|work)\/([\w-]+)\/?$/);
+  if (pm && projectBySlug(pm[2])) {
+    const base = pm[1] === "work" ? IE_WORK : IE_HOME;
+    return { page: { url: `${base}/${pm[2]}`, kind: "project", slug: pm[2] } };
   }
   return { page: { url, kind: "error" } };
 }
@@ -1329,7 +1380,11 @@ export function IExploreApp({ onOpenFile }: { onOpenFile: (path: string) => void
       </div>
       <ScrollArea className="xp-ie__page">
         {page.kind === "home" ? (
-          <IePortal onOpen={(slug) => go(`${IE_HOME}/${slug}`)} />
+          <IePortal
+            onOpen={(slug, section) =>
+              go(`${section === "work" ? IE_WORK : IE_HOME}/${slug}`)
+            }
+          />
         ) : page.kind === "project" ? (
           <IeDetail
             slug={page.slug}
@@ -1345,7 +1400,11 @@ export function IExploreApp({ onOpenFile }: { onOpenFile: (path: string) => void
   );
 }
 
-function IePortal({ onOpen }: { onOpen: (slug: string) => void }) {
+function IePortal({
+  onOpen,
+}: {
+  onOpen: (slug: string, section: "projects" | "work") => void;
+}) {
   return (
     <div className="xp-ie__doc">
       <p className="xp-ie__crumb">fadlan.portfolio › projects</p>
@@ -1357,7 +1416,23 @@ function IePortal({ onOpen }: { onOpen: (slug: string) => void }) {
       <ul className="xp-ie__cards">
         {projects.map((p) => (
           <li key={p.id}>
-            <button type="button" className="xp-ie__title" onClick={() => onOpen(p.slug)}>
+            <button type="button" className="xp-ie__title" onClick={() => onOpen(p.slug, "projects")}>
+              {p.name}
+            </button>
+            <p>{p.blurb}</p>
+            <p className="xp-ie__meta">{p.stack.join(" · ")}</p>
+          </li>
+        ))}
+      </ul>
+      <h2 className="xp-ie__h2">Work — {workProjects.length} client projects</h2>
+      <p className="xp-ie__lede">
+        Client work. These are not public repos.
+      </p>
+      <ul className="xp-ie__cards xp-ie__cards--work">
+        {workProjects.map((p) => (
+          <li key={p.id}>
+            <p className="xp-ie__badge">Client work</p>
+            <button type="button" className="xp-ie__title" onClick={() => onOpen(p.slug, "work")}>
               {p.name}
             </button>
             <p>{p.blurb}</p>
@@ -1380,8 +1455,10 @@ function IeDetail({
   onOpenFile: (path: string) => void;
   onExternal: (url: string) => void;
 }) {
-  const project = projects.find((p) => p.slug === slug);
+  const project = projectBySlug(slug);
   if (!project) return null;
+  const repos = projectRepoLinks(project);
+  const work = isWorkProject(project);
   return (
     <div className="xp-ie__doc">
       <p className="xp-ie__crumb">
@@ -1390,6 +1467,7 @@ function IeDetail({
         </button>{" "}
         › {project.slug}
       </p>
+      {work ? <p className="xp-ie__workbanner">Client work — not a public repo</p> : null}
       <h1>{project.name}</h1>
       <p className="xp-ie__lede">{project.blurb}</p>
       <table className="xp-ie__spec">
@@ -1402,6 +1480,12 @@ function IeDetail({
             <th scope="row">stack</th>
             <td>{project.stack.join(" · ")}</td>
           </tr>
+          {project.availability ? (
+            <tr>
+              <th scope="row">repo</th>
+              <td>{project.availability}</td>
+            </tr>
+          ) : null}
           {project.note ? (
             <tr>
               <th scope="row">note</th>
@@ -1411,12 +1495,17 @@ function IeDetail({
         </tbody>
       </table>
       <p className="xp-ie__actions">
-        <button type="button" onClick={() => onOpenFile(`${HOME}/projects/${project.filename}`)}>
+        <button type="button" onClick={() => onOpenFile(projectPath(project))}>
           Open in WordPad
         </button>
-        <button type="button" onClick={() => onExternal(project.repo)}>
-          Repo
-        </button>
+        {repos.map((link) => (
+          <button key={link.url} type="button" onClick={() => onExternal(link.url)}>
+            {link.label}
+          </button>
+        ))}
+        {project.site ? (
+          <button type="button" onClick={() => onExternal(project.site!)}>Site</button>
+        ) : null}
         {project.demo ? (
           <button type="button" onClick={() => onExternal(project.demo!)}>Live demo</button>
         ) : null}

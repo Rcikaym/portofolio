@@ -16,9 +16,11 @@ export const profile = {
 
 export const about = [
   "I build web software and the automation around it — TypeScript and Python most days, Next.js / NestJS / PostgreSQL when it is a product, PowerShell and PLC talk when it is a workshop.",
-  "Software Engineering graduate of SMKN 1 Kota Bekasi (2025). Recent work: a Manufacturing Execution System at CV. Mesin Ngebut Canggih, a Python diagnostic tool at Kemendikdasmen that cut manual hardware inspection by about 80%, and NimeList at PT Bangun Kreatif Abadi.",
+  "Software Engineering graduate of SMKN 1 Kota Bekasi (2025). Current work: freelance tech lead at PT Kenteng Songo Advistama, on zavora.life, a Laravel clinical patient portal. Earlier: a Manufacturing Execution System at CV. Mesin Ngebut Canggih, a Python diagnostic tool at Kemendikdasmen that cut manual hardware inspection by about 80%, and NimeList at PT Bangun Kreatif Abadi.",
   "BNSP Junior Coder. 1st place, LKS Web Technology — Bekasi City, then the West Java provincial round. TOEIC 855/990. Open to full-time or freelance work in web, backend, or automation.",
 ] as const;
+
+export type ProjectRepo = { label: string; url: string };
 
 export type Project = {
   id: string;
@@ -27,10 +29,16 @@ export type Project = {
   name: string;
   blurb: string;
   stack: string[];
-  repo: string;
+  /** Primary public repo. Omitted for private client work. */
+  repo?: string;
+  /** Set when a project is split across repos (frontend / backend). */
+  repos?: ProjectRepo[];
   demo?: string;
+  site?: string;
   language: string;
   note?: string;
+  /** Plain line when there is no public repo. */
+  availability?: string;
 };
 
 export const projects: Project[] = [
@@ -74,7 +82,6 @@ export const projects: Project[] = [
       "Minimalist Japanese homeware store as a React SPA. Cart via Context + useReducer, mock API, no UI kit — tokens and plain CSS.",
     stack: ["React", "Vite", "react-router-dom", "CSS custom properties"],
     repo: "https://github.com/Rcikaym/e-commerce-spa",
-    demo: "https://e-commerce-spa-one.vercel.app",
     language: "JavaScript",
   },
   {
@@ -100,6 +107,81 @@ export const projects: Project[] = [
     demo: "https://a-gift-sigma.vercel.app",
     language: "JavaScript",
   },
+  {
+    id: "jira",
+    slug: "jira-wanna-be",
+    filename: "jira-wanna-be.md",
+    name: "jira-wanna-be",
+    blurb:
+      "Project and task board for a multi-discipline team. Kanban with dependency locks, role-aware actions, optimistic locking, and an audit trail. Next.js frontend; Hono API on PostgreSQL.",
+    stack: [
+      "Next.js",
+      "TypeScript",
+      "Tailwind CSS",
+      "TanStack Query",
+      "Hono",
+      "Prisma",
+      "PostgreSQL",
+    ],
+    repo: "https://github.com/Rcikaym/jira-wanna-be-frontend",
+    repos: [
+      {
+        label: "Frontend",
+        url: "https://github.com/Rcikaym/jira-wanna-be-frontend",
+      },
+      {
+        label: "Backend",
+        url: "https://github.com/Rcikaym/jira-wanna-be-backend",
+      },
+    ],
+    demo: "https://jira-wanna-be-frontend.vercel.app",
+    language: "TypeScript",
+    note: "Fullstack assessment for NodeWave. Frontend and backend are separate repos.",
+  },
+];
+
+/** Client work. Not public repos — rendered apart from `projects`. */
+export const workProjects: Project[] = [
+  {
+    id: "zavora",
+    slug: "zavora",
+    filename: "zavora.md",
+    name: "zavora.life, PT Kenteng Songo Advistama",
+    blurb:
+      "Laravel clinical patient portal. Redesigned the patient dashboard information architecture: a two-column view in place of the single-stream layout, a mobile-first bottom tab bar, and a consolidated secondary-tools hub, with a 1,400+ line clinical design-token system. Fixed a recurring Leaflet/CARTO map-resizing bug with ResizeObserver and requestAnimationFrame, kept third-party map tiles out of the PWA service worker cache, and hardened Docker Nginx/PHP upload limits for facility CSV imports. 400+ lines of PHPUnit regression tests for layout, viewport, and CSV import.",
+    stack: [
+      "Laravel",
+      "PHP",
+      "PHPUnit",
+      "Leaflet",
+      "PWA",
+      "Docker",
+      "Nginx",
+      "CSS design tokens",
+    ],
+    site: "https://zavora.life",
+    language: "PHP",
+    availability: "Private repo. No public code.",
+  },
+  {
+    id: "plc-mes",
+    slug: "plc-mes",
+    filename: "plc-mes.md",
+    name: "PLC MES, CV. Mesin Ngebut Canggih",
+    blurb:
+      "A manufacturing execution system I built alone for a workshop client. Python reads Siemens S7-200 SMART PLCs over snap7; machine metrics go to TimescaleDB, and config lives in a separate event-sourced PostgreSQL store. Built for 20 to 200 machines and runs as a Docker stack on a Radxa E24C edge box.",
+    stack: [
+      "Python",
+      "snap7",
+      "Siemens S7-200 SMART",
+      "PostgreSQL",
+      "TimescaleDB",
+      "Event sourcing",
+      "Docker",
+    ],
+    language: "Python",
+    availability: "Private client work. No public repo.",
+  },
 ];
 
 export const skills = [
@@ -124,6 +206,14 @@ export const skills = [
 ] as const;
 
 export const experience = [
+  {
+    when: "2026",
+    title: "Tech lead & full-stack software engineer (freelance)",
+    org: "PT Kenteng Songo Advistama · Aug 2026–Present",
+    detail:
+      "Freelance tech lead on zavora.life, a Laravel clinical patient portal. Redesigned the patient dashboard: a 1,400+ line clinical design-token system, a two-column view in place of the single-stream layout, a mobile-first bottom tab bar, and a consolidated secondary-tools hub. Fixed a recurring Leaflet/CARTO map-resizing bug with ResizeObserver and requestAnimationFrame, kept third-party map tiles out of the PWA service worker cache, and hardened Docker Nginx/PHP upload limits for facility CSV imports. 400+ lines of PHPUnit regression tests for layout, viewport, and CSV import.",
+    workId: "zavora",
+  },
   {
     when: "2026",
     title: "Software engineer",
@@ -186,6 +276,35 @@ export type FsEntry = {
 
 export const HOME = "~/fadlan";
 
+export function projectRepoLinks(project: Project): ProjectRepo[] {
+  if (project.repos && project.repos.length > 0) return project.repos;
+  if (project.repo) return [{ label: "Repo", url: project.repo }];
+  return [];
+}
+
+export function projectByFilename(name: string): Project | undefined {
+  return (
+    projects.find((p) => p.filename === name) ??
+    workProjects.find((p) => p.filename === name)
+  );
+}
+
+export function projectBySlug(slug: string): Project | undefined {
+  return (
+    projects.find((p) => p.slug === slug) ??
+    workProjects.find((p) => p.slug === slug)
+  );
+}
+
+export function isWorkProject(project: Project): boolean {
+  return workProjects.some((row) => row.id === project.id);
+}
+
+export function projectPath(project: Project): string {
+  const dir = isWorkProject(project) ? "work" : "projects";
+  return `${HOME}/${dir}/${project.filename}`;
+}
+
 export const fsEntries: FsEntry[] = [
   { path: HOME, name: "fadlan", kind: "dir", parent: "~" },
   {
@@ -224,11 +343,23 @@ export const fsEntries: FsEntry[] = [
     kind: "dir",
     parent: HOME,
   },
+  {
+    path: `${HOME}/work`,
+    name: "work",
+    kind: "dir",
+    parent: HOME,
+  },
   ...projects.map((p) => ({
     path: `${HOME}/projects/${p.filename}`,
     name: p.filename,
     kind: "file" as const,
     parent: `${HOME}/projects`,
+  })),
+  ...workProjects.map((p) => ({
+    path: `${HOME}/work/${p.filename}`,
+    name: p.filename,
+    kind: "file" as const,
+    parent: `${HOME}/work`,
   })),
 ];
 

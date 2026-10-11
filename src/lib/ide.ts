@@ -7,8 +7,11 @@ import {
   findEntry,
   normalisePath,
   profile,
+  projectByFilename,
+  projectPath,
   projects,
   skills,
+  workProjects,
 } from "./content";
 
 export type IdePanel = "files" | "search" | "git" | "outline";
@@ -81,8 +84,8 @@ function corpus(): CorpusRow[] {
         " ",
       ),
     },
-    ...projects.map((project) => ({
-      path: `${HOME}/projects/${project.filename}`,
+    ...[...projects, ...workProjects].map((project) => ({
+      path: projectPath(project),
       name: project.filename,
       text: [
         project.name,
@@ -90,6 +93,8 @@ function corpus(): CorpusRow[] {
         project.language,
         ...project.stack,
         project.note ?? "",
+        project.availability ?? "",
+        project.site ?? "",
       ].join(" "),
     })),
   ];
@@ -199,7 +204,7 @@ export function outlineFor(path: string): OutlineRow[] {
   if (name === "contact.sh") {
     return [{ id: "contact", label: "Contact" }];
   }
-  const project = projects.find((row) => row.filename === name);
+  const project = projectByFilename(name);
   if (project) {
     return [
       { id: `project-${project.id}`, label: project.name },
@@ -218,12 +223,18 @@ export function scmRemote(): { host: string; url: string; since: string } {
 }
 
 export function scmPublished(): ScmRepo[] {
-  return projects.map((project) => ({
-    name: project.name,
-    path: `${HOME}/projects/${project.filename}`,
-    url: project.repo,
-    language: project.language,
-  }));
+  return projects.flatMap((project) =>
+    project.repo
+      ? [
+          {
+            name: project.name,
+            path: projectPath(project),
+            url: project.repo,
+            language: project.language,
+          },
+        ]
+      : [],
+  );
 }
 
 export function panelTitle(panel: IdePanel): string {

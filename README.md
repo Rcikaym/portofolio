@@ -2,13 +2,14 @@
 
 Junior software engineer in Bekasi. This repo is the public home directory — a Unix shell or an editor, same files either way.
 
-I ship web software and the automation around it. Recent work includes a manufacturing execution system at CV. Mesin Ngebut Canggih, diagnostics at Kemendikdasmen, and NimeList at PT Bangun Kreatif Abadi. Public code as [Rcikaym](https://github.com/Rcikaym).
+I ship web software and the automation around it. Current work is [zavora.life](https://zavora.life), a Laravel clinical patient portal at PT Kenteng Songo Advistama. Before that: a manufacturing execution system at CV. Mesin Ngebut Canggih, diagnostics at Kemendikdasmen, and NimeList at PT Bangun Kreatif Abadi. Public code as [Rcikaym](https://github.com/Rcikaym).
 
 ## What’s in the tree
 
 - `about.md` — who this is
 - `experience.log` — jobs, school, certs
 - `projects/` — public repos
+- `work/` — client projects, not public repos
 - `skills.txt` — languages and tools from work
 - `contact.sh` — mail, GitHub, LinkedIn
 
