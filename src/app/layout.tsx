@@ -21,16 +21,35 @@ const grotesk = Space_Grotesk({
   variable: "--font-grotesk",
 });
 
+const title = "Fadlan Hamsyari Portfolio";
+const description =
+  "Software engineer in Bekasi. Web, backend, and automation. Currently tech lead on zavora.life.";
+const shareImage = {
+  url: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: "Fadlan Hamsyari, software engineer in Bekasi, on a Windows XP desktop",
+  type: "image/png",
+};
+
 export const metadata: Metadata = {
-  title: "Fadlan Hamsyari — Portofolio",
-  description:
-    "Portofolio for Fadlan Hamsyari Priyanto, junior software engineer in Bekasi. Unix shell or editor. Public work as Rcikaym on GitHub.",
+  metadataBase: new URL("https://porto-fadlan.vercel.app"),
+  title,
+  description,
   authors: [{ name: "Fadlan Hamsyari Priyanto" }],
   openGraph: {
-    title: "Fadlan Hamsyari — Portofolio",
-    description:
-      "Portofolio for Fadlan Hamsyari Priyanto. Unix shell or editor. Public work as Rcikaym on GitHub.",
+    title,
+    description,
     type: "website",
+    url: "/",
+    siteName: title,
+    images: [shareImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [shareImage],
   },
 };
 
