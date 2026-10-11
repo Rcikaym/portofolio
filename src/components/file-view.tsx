@@ -134,8 +134,8 @@ function Readme({
       </p>
       <HelloType />
       <p>
-        This directory is the site. Unix shell or editor — same files either
-        way. The tree is the portfolio.
+        Open any file on the desktop to read about me and my work. The Terminal
+        shows the same files if you prefer commands.
       </p>
       <p>
         Junior software engineer in Bekasi. Web most days — TypeScript, Next.js,
