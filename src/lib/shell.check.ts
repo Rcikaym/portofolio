@@ -34,7 +34,21 @@ const cwd = { cwd: HOME };
   assert.ok(
     r.actions[0]?.type === "print" &&
       r.actions[0].lines.includes("README.md") &&
-      r.actions[0].lines.includes("projects/"),
+      r.actions[0].lines.includes("projects/") &&
+      r.actions[0].lines.includes("work/"),
+  );
+}
+
+{
+  const r = parseCommand("cat work/zavora.md", cwd);
+  assert.ok(r.actions[0]?.type === "open" && r.actions[0].path.endsWith("/work/zavora.md"));
+}
+
+{
+  const r = parseCommand("cat projects/jira-wanna-be.md", cwd);
+  assert.ok(
+    r.actions[0]?.type === "open" &&
+      r.actions[0].path.endsWith("/projects/jira-wanna-be.md"),
   );
 }
 

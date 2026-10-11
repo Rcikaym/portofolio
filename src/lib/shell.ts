@@ -6,7 +6,6 @@ import {
   findEntry,
   normalisePath,
   profile,
-  projects,
   skills,
   type CommandName,
 } from "./content";
@@ -434,6 +433,3 @@ export function isCommand(name: string): name is CommandName {
   return (COMMANDS as readonly string[]).includes(name);
 }
 
-export function projectByFilename(name: string) {
-  return projects.find((p) => p.filename === name);
-}

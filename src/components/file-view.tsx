@@ -7,13 +7,16 @@ import {
   experience,
   findEntry,
   profile,
+  projectByFilename,
+  projectPath,
+  projectRepoLinks,
   projects,
   skills,
+  workProjects,
   type Project,
 } from "@/lib/content";
 import { HelloType } from "@/components/hello-type";
 import { headingAnchor } from "@/lib/ide";
-import { projectByFilename } from "@/lib/shell";
 
 export type FileSkin = "unix" | "ide";
 
@@ -46,7 +49,7 @@ export function FileView({
     return <About />;
   }
   if (name === "experience.log") {
-    return <Experience />;
+    return <Experience onOpen={onOpen} />;
   }
   if (name === "skills.txt") {
     return <Skills />;
@@ -115,6 +118,11 @@ function Readme({
       open: "projects",
       gloss: `${projects.length} public repos`,
     },
+    {
+      file: skin === "ide" ? "work" : "work/",
+      open: "work",
+      gloss: `${workProjects.length} client projects, not public`,
+    },
     { file: "skills.txt", open: "skills.txt", gloss: "languages and tools from work" },
     { file: "contact.sh", open: "contact.sh", gloss: "mail, GitHub, LinkedIn" },
   ] as const;
@@ -132,9 +140,10 @@ function Readme({
       <p>
         Junior software engineer in Bekasi. Web most days — TypeScript, Next.js,
         NestJS, PostgreSQL. Workshop days, Python, PowerShell, and Siemens PLCs.
-        SMKN 1 Kota Bekasi, 2025. Recent work: a manufacturing execution system
-        at CV. Mesin Ngebut Canggih, diagnostics at Kemendikdasmen, and NimeList
-        at PT Bangun Kreatif Abadi.
+        SMKN 1 Kota Bekasi, 2025. Current work: freelance tech lead at PT Kenteng
+        Songo Advistama, on the Laravel portal zavora.life. Before that: a
+        manufacturing execution system at CV. Mesin Ngebut Canggih, diagnostics
+        at Kemendikdasmen, and NimeList at PT Bangun Kreatif Abadi.
       </p>
       <p>
         Open to full-time or freelance in web, backend, or automation.
@@ -202,27 +211,45 @@ function About() {
         <a href={profile.github} rel="noreferrer" target="_blank">
           {profile.handle}
         </a>
-        . Repos live in <span className="path">~/fadlan/projects</span>.
+        . Repos live in <span className="path">~/fadlan/projects</span>. Client
+        work is in <span className="path">~/fadlan/work</span>.
       </p>
     </article>
   );
 }
 
-function Experience() {
+function Experience({ onOpen }: { onOpen: (path: string) => void }) {
   return (
     <article className="doc" id="experience">
       <h1>experience.log</h1>
       <ol className="log">
-        {experience.map((row) => (
-          <li key={row.title} id={headingAnchor("job", row.title)}>
-            <span className="log-when">{row.when}</span>
-            <div>
-              <h2>{row.title}</h2>
-              <p className="log-org">{row.org}</p>
-              <p>{row.detail}</p>
-            </div>
-          </li>
-        ))}
+        {experience.map((row) => {
+          const linked =
+            "workId" in row
+              ? workProjects.find((project) => project.id === row.workId)
+              : undefined;
+          return (
+            <li key={row.title} id={headingAnchor("job", row.title)}>
+              <span className="log-when">{row.when}</span>
+              <div>
+                <h2>{row.title}</h2>
+                <p className="log-org">{row.org}</p>
+                <p>{row.detail}</p>
+                {linked ? (
+                  <p>
+                    <button
+                      type="button"
+                      className="index-link"
+                      onClick={() => onOpen(projectPath(linked))}
+                    >
+                      {linked.name}
+                    </button>
+                  </p>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
       </ol>
       <p className="dim hint" id="credentials">
         certs & school
@@ -386,6 +413,7 @@ LI=${profile.linkedin}
 }
 
 function ProjectView({ project }: { project: Project }) {
+  const repos = projectRepoLinks(project);
   return (
     <article className="doc" id={`project-${project.id}`}>
       <h1>{project.name}</h1>
@@ -399,14 +427,38 @@ function ProjectView({ project }: { project: Project }) {
           <dt>stack</dt>
           <dd>{project.stack.join(" · ")}</dd>
         </div>
-        <div>
-          <dt>repo</dt>
-          <dd>
-            <a href={project.repo} target="_blank" rel="noreferrer">
-              {project.repo.replace("https://", "")}
-            </a>
-          </dd>
-        </div>
+        {repos.length > 0 ? (
+          <div>
+            <dt>{repos.length > 1 ? "repos" : "repo"}</dt>
+            <dd>
+              {repos.map((link, i) => (
+                <span key={link.url}>
+                  {i > 0 ? <br /> : null}
+                  <a href={link.url} target="_blank" rel="noreferrer">
+                    {repos.length > 1
+                      ? `${link.label} — ${link.url.replace("https://", "")}`
+                      : link.url.replace("https://", "")}
+                  </a>
+                </span>
+              ))}
+            </dd>
+          </div>
+        ) : project.availability ? (
+          <div>
+            <dt>repo</dt>
+            <dd>{project.availability}</dd>
+          </div>
+        ) : null}
+        {project.site ? (
+          <div>
+            <dt>site</dt>
+            <dd>
+              <a href={project.site} target="_blank" rel="noreferrer">
+                {project.site.replace("https://", "")}
+              </a>
+            </dd>
+          </div>
+        ) : null}
         {project.demo ? (
           <div>
             <dt>demo</dt>

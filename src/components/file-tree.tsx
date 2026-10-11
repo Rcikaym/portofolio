@@ -87,7 +87,9 @@ function IdeExplorer({
   openPath: string;
   onOpen: (path: string) => void;
 }) {
-  const [openDirs, setOpenDirs] = useState(() => new Set([HOME, `${HOME}/projects`]));
+  const [openDirs, setOpenDirs] = useState(
+    () => new Set([HOME, `${HOME}/projects`, `${HOME}/work`]),
+  );
 
   const toggle = (path: string) => {
     setOpenDirs((prev) => {
