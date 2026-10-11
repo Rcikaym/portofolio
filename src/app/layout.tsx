@@ -24,6 +24,13 @@ const grotesk = Space_Grotesk({
 const title = "Fadlan Hamsyari Portfolio";
 const description =
   "Software engineer in Bekasi. Web, backend, and automation. Currently tech lead on zavora.life.";
+const shareImage = {
+  url: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: "Fadlan Hamsyari, software engineer in Bekasi, on a Windows XP desktop",
+  type: "image/png",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://porto-fadlan.vercel.app"),
@@ -36,11 +43,13 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: title,
+    images: [shareImage],
   },
   twitter: {
     card: "summary_large_image",
     title,
     description,
+    images: [shareImage],
   },
 };
 
